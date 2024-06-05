@@ -1,0 +1,19 @@
+{
+    "Lua.diagnostics.globals": [
+        "Game",
+        "VFS",
+        "Spring",
+        "widget",
+        "WG",
+        "GL",
+        "gl",
+        "widgetHandler",
+        "UnitDefs",
+        "UnitDefNames"
+    ],
+    "Lua.diagnostics.disable": [
+        "duplicate-set-field"
+    ],
+    "lua.debug.settings.cpath": "",
+    "lua.debug.settings.path": "${workspaceFolder}/?.lua;${workspaceFolder}/?/init.lua; ./?.lua ; ./?/init.lua "
+}

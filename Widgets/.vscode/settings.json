@@ -1,0 +1,14 @@
+{
+    "Lua.diagnostics.globals": [
+        "widget",
+        "Spring",
+        "WG",
+        "Game",
+        "VFS",
+        "GL",
+        "gl"
+    ],
+    "Lua.diagnostics.disable": [
+        "duplicate-set-field"
+    ]
+}
