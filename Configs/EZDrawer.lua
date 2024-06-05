@@ -1,10 +1,11 @@
 if(WG.EZDrawer==nil) then
     VFS.Include("LuaUI/Configs/WackyBagToWG.lua")
     local EZDrawer={}
+    --- ez drawer, can be called anytime and draw
     WG.EZDrawer=EZDrawer
     local unordered_list=WG.WackyBag.collections.unordered_list
-    ---@type unordered_list<Drawer>
-    local datas=unordered_list.new()
+    
+    local datas={}--unordered_list.new()
     EZDrawer.datas=datas
 
 
@@ -77,10 +78,11 @@ if(WG.EZDrawer==nil) then
     function DrawerTemplates.DrawLine (x1,y1,z1,x2,y2,z2,color,linewidth)
         glLineWidth(linewidth)
         glColor(color[1],color[2],color[3],color[4])
-        glBeginEnd(GL_LINES,function ()
+        local fn=function ()
             glVertex(x1,y1,z1)
             glVertex(x2,y2,z2)
-        end)
+        end
+        glBeginEnd(GL_LINES,fn)
     end
     ---draw a vector
     ---@param x1 number
@@ -102,7 +104,7 @@ if(WG.EZDrawer==nil) then
 
         glLineWidth(linewidth)
         glColor(color[1],color[2],color[3],color[4])
-        glBeginEnd(GL_LINES,function ()
+        local fn=function ()
             glVertex(x1,y1,z1)
             glVertex(x2,y2,z2)
 
@@ -111,6 +113,7 @@ if(WG.EZDrawer==nil) then
 
             glVertex(x2,y2,z2)
             glVertex(arrx-arrdltx,arry,arrz-arrdltz)
-        end)
+        end
+        glBeginEnd(GL_LINES,fn)
     end
 end

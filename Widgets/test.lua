@@ -6,7 +6,7 @@ function widget:GetInfo()
 		date      = "date",
 		license   = "",
 		layer     = math.huge,
-		enabled   = true,
+		enabled   = false,
 	}
 end
 local spEcho=Spring.Echo

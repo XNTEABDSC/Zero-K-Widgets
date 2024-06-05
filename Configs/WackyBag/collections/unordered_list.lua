@@ -1,5 +1,5 @@
 if WG.WackyBag.collections.unordered_list==nil then
-
+    --- when remove one, the latest will be moved to the vacancy
     ---@class unordered_list<T>:{ [integer]:T,count:integer,items:{[integer]:T}, add:(fun(self:unordered_list<T>,item:T):integer),remove:(fun(self:unordered_list<T>,index:integer):T)}
     local unordered_list= {}
     WG.WackyBag.collections.unordered_list=unordered_list

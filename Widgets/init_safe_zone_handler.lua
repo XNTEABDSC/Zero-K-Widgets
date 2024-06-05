@@ -45,7 +45,7 @@ end
 
 local function WatchUnitUpdate()
     --local count=0
-    for id,obj in pairs(SafeZone.WatchUnits) do
+    for id,obj in pairs(SafeZone.WatchDangerUnits) do
         --count= count+ 1
         local posX,posY,posZ=spGetUnitPosition(id)
         if(posX == nil) then
@@ -132,7 +132,7 @@ function widget:UnitEnteredRadar(unitID, unitTeam, allyTeam, unitDefID)
     --Spring.Echo("game_message: " .. tostring(spGetSpectatingState()))
     if spGetSpectatingState()==false and spValidUnitID(unitID) and not spIsUnitAllied(unitID) --[=[ and (#unitDefID[spGetUnitDefID(unitID)].weapons)>0]=]  then
         
-    SafeZone.WatchUnits[unitID]=SafeZone.CreateWatchUnit(unitID)
+    SafeZone.WatchDangerUnits[unitID]=SafeZone.CreateWatchUnit(unitID)
 
         local ux,uz,ugx,ugz=SafeZone.UnitPosGridPos(unitID)
         if SafeZone.ValidGridPos(ugx,ugz) then
@@ -158,14 +158,14 @@ function widget:GameFrame(n)
         return;
     end
 
-    for unitId, obj in pairs(SafeZone.WatchUnits) do
+    for unitId, obj in pairs(SafeZone.WatchDangerUnits) do
         if not spValidUnitID(unitId) then
             --spMarkerAddPoint(obj.posX,obj.posY,obj.posZ,"remove invalid",true)
-            SafeZone.WatchUnits[unitId]=nil
+            SafeZone.WatchDangerUnits[unitId]=nil
         end
     end
     
-    if(n%SafeZone.WatchTimeDelta==0) then
+    if(n%SafeZone.WatchDangerUnitsTimeDelta==0) then
         CheckRadarField()
         WatchUnitUpdate()
         SafeZone.GridUpdate()

@@ -222,6 +222,5 @@ return {
 		{"morph", "C+m"},
 		{"upgradecommstop", "None"},
 		{"upgradecomm", "C+m"},
-		{"HideInterface", "None"},
 	},
 }

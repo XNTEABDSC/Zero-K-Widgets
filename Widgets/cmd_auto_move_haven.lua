@@ -1,7 +1,7 @@
 function widget:GetInfo()
 	return {
 		name      = "Auto Move Haven",
-		desc      = "automatically move retreat zone to safe place",
+		desc      = "automatically move retreat zone to safe place\n",
 		author    = "XNT",
 		date      = "date",
 		license   = "",
@@ -157,7 +157,7 @@ function widget:GameFrame(n)
             --spMarkerAddPoint(px,0,pz,"haven" .. havenId)
             local gx,gz=SafeZone.PosToGrid(px,pz)
             if(SafeZone.SafeZoneGrid[gx][gz].DangerTime>SafeZone.GameTime)then
-                local newgx,newgz=SafeZone.FindClosestSafePlace(gx,gz,-2.5)
+                local newgx,newgz=SafeZone.FindClosestSafeZone(gx,gz,-2.5)
                 if(newgz==nil) then
                 else
                     local py=spGetGroundHeight(px,pz)

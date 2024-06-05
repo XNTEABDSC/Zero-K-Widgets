@@ -22,20 +22,20 @@ if WG.SafeZone==nil then
     local SafeZone={}
     
     --- Store where is safe<br>
-    --- The world are splited into rectangles.
-    --- 
+    --- The world are splited into rectangles.<br>
+    --- (SafeZone.SafeZoneGrid[gx][gz].DangerTime - SafeZone.GameTime) shows whether the grid is danger
     WG.SafeZone=SafeZone
     --- edge length of rectangles
     SafeZone.GridSize=256
-    --- whdth,height count of rectangles
+    --- width,height count of rectangles
     SafeZone.GridWitdh,SafeZone.GridHeight=MapWidth/SafeZone.GridSize,MapHeight/SafeZone.GridSize
     --- current frame, (historical reasons: I d k Spring.GetGameFrame)
     SafeZone.GameTime=0
-    --- how fast do 'danger' spread. 
+    --- how fast do 'danger' spread. in second
     SafeZone.DangerSpreadTime=5
-    --- set when a grid is danger
+    --- set when a grid is danger. in second
     SafeZone.DangerInitTime=10
-    --- when the grid is safe
+    --- when the grid is safe. in second
     SafeZone.SafeTime=-10
     
     --- from world pos to its grid pos
@@ -82,7 +82,7 @@ if WG.SafeZone==nil then
     --- SafeZoneGrid[gx][gz]={DangerTime}
     ---@type {DangerTime:integer}[][]
     SafeZone.SafeZoneGrid={}
-    SafeZone.SafeZoneGridSwap={}
+    SafeZone.SafeZoneGridCache={}
     
     local function CreateSafeZoneGridObj()
         return {
@@ -93,9 +93,9 @@ if WG.SafeZone==nil then
     function SafeZone.InitGrid()
         for gx = 1,SafeZone.GridWitdh  do
             SafeZone.SafeZoneGrid[gx]={}
-            SafeZone.SafeZoneGridSwap[gx]={}
+            SafeZone.SafeZoneGridCache[gx]={}
             local gridx=SafeZone.SafeZoneGrid[gx]
-            local gridx2=SafeZone.SafeZoneGridSwap[gx]
+            local gridx2=SafeZone.SafeZoneGridCache[gx]
             for gy = 1,SafeZone.GridHeight  do
                 gridx[gy]=CreateSafeZoneGridObj()
                 gridx2[gy]=CreateSafeZoneGridObj()
@@ -103,12 +103,15 @@ if WG.SafeZone==nil then
         end
     end
 
+    --- update grids DangerTime, <br>
+    --- DangerTime will be > neighborhoods'DangerTime - SafeZone.DangerSpreadTime, <br>
+    --- and > slope neighborhoods'DangerTime - SafeZone.DangerSpreadTime/1.414
     function SafeZone.GridUpdate()
         local DangerSpreadTime=SafeZone.DangerSpreadTime
         local DangerSpreadFrameTime=FramePerSecond*DangerSpreadTime
         local DangerSpreadFrameTimeSlope=DangerSpreadFrameTime/1.414
         for gx = 1,SafeZone.GridWitdh  do
-            local gridx2=SafeZone.SafeZoneGridSwap[gx]
+            local gridx2=SafeZone.SafeZoneGridCache[gx]
             for gz = 1,SafeZone.GridHeight  do
                 local max=SafeZone.SafeZoneGrid[gx][gz].DangerTime
                 local n
@@ -164,11 +167,12 @@ if WG.SafeZone==nil then
                 gridx2[gz].DangerTime=max
             end
         end
-        local temp=SafeZone.SafeZoneGridSwap
-        SafeZone.SafeZoneGrid=SafeZone.SafeZoneGridSwap
-        SafeZone.SafeZoneGridSwap=temp
+        local temp=SafeZone.SafeZoneGridCache
+        SafeZone.SafeZoneGrid=SafeZone.SafeZoneGridCache
+        SafeZone.SafeZoneGridCache=temp
     end
 
+    --- set zone to be danger
     function SafeZone.SetZoneDanger(gx,gz)
         if not SafeZone.ValidGridPos(gx,gz) then
             spEcho("invalid pos ".. string.format("(%s,%s)",tostring(gx),tostring(gz)) .. debug.traceback())
@@ -177,8 +181,12 @@ if WG.SafeZone==nil then
         end
     end
 
-    SafeZone.WatchTimeDelta=6
-    SafeZone.WatchUnits={}
+
+    --- update frequency of watch danger units, in frame
+    SafeZone.WatchDangerUnitsTimeDelta=6
+
+    --- danger units, register when in radar, update per SafeZone.WatchDangerUnitsTimeDelta, set their grid pos to danger
+    SafeZone.WatchDangerUnits={}
     function SafeZone.CreateWatchUnit(unitID)
         local posX,posY,posZ=spGetUnitPosition(unitID)
         return{
@@ -188,11 +196,12 @@ if WG.SafeZone==nil then
             posZ=posZ
         }
     end
-    function SafeZone.FindClosestSafePlace(gx,gz,safetime)
+    --- find closest SafeZone where DangerTime-GameTime < safetime
+    function SafeZone.FindClosestSafeZone(gx,gz,safetime)
         safetime=safetime or SafeZone.SafeTime
         local maxDist=(SafeZone.GridHeight+SafeZone.GridWitdh)*SafeZone.GridSize
         local newx,newz=nil,nil
-        WackyBag.calculates.grid_enum.EnumLoop(function (dist,dx,dz)
+        local enumFn=function (dist,dx,dz)
             if(dist>=maxDist) then
                 return false
             end
@@ -206,7 +215,8 @@ if WG.SafeZone==nil then
                 return false
             end
             return true
-        end)
+        end
+        WackyBag.calculates.grid_enum.EnumLoop(enumFn)
         return newx,newz
     end
 
