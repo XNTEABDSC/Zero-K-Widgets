@@ -132,16 +132,7 @@ function widget:Initialize()
     if WackyBag.utils.DisableForSpec() then
         return
     end
-    --widgetHandler:RegisterGlobal("HavenUpdate", HavenUpdate)
-    --[[
-    local rawFn=HavenUpdate
-    spEcho("game_message: havenUpdateFn".. tostring(HavenUpdate))
-    HavenUpdate=function ()
-        spEcho("game_message: ".."do add fn")
-        rawFn()
-        MyHavenUpdate()
-    end
-    ]]
+    
 	GetHavens()
 end
 
