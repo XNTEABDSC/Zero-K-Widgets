@@ -1,9 +1,9 @@
---"LuaUI/Configs/WackyBagToWG.lua"
+--"LuaUI/Libs/WackyBagToWG.lua"
 if (WG.WackyBag==nil) then
     
     local WackyBag={}
     WG.WackyBag = WackyBag
-    WackyBag.path="LuaUI/Configs/WackyBag/"
+    WackyBag.path="LuaUI/Libs/WackyBag/"
     VFS.Include(WackyBag.path .. "utils.lua")
     WackyBag.collections={}
     --WackyBag.collections.priority_queue = VFS.Include(WackyBag.path .. "collections/priority_queue.lua")

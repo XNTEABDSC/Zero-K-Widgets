@@ -10,7 +10,7 @@ function widget:GetInfo()
 	}
 end
 
-VFS.Include("LuaUI/Configs/SafeZone.lua")
+VFS.Include("LuaUI/Libs/SafeZone.lua")
 
 local spGetUnitDefID=Spring.GetUnitDefID
 local spGetUnitPosition=Spring.GetUnitPosition
@@ -71,8 +71,12 @@ local function CheckRadarField()
             local px,pz=SafeZone.GridPosToCenter(gx,gz)
             local py=spGetGroundHeight(px,pz)+256
 
-            if not spIsPosInRadar(px,py,pz,spGetMyAllyTeamID()) and not spIsPosInLos(px,py,pz,spGetMyAllyTeamID()) then
-                SafeZone.SetZoneDanger(gx,gz)
+            if not spIsPosInLos(px,py,pz,spGetMyAllyTeamID()) then
+                if not spIsPosInRadar(px,py,pz,spGetMyAllyTeamID()) then
+                    SafeZone.SetZoneDanger(gx,gz)
+                else
+                    SafeZone.SetZoneDangerTimeUpTo(gx,gz,0)
+                end
             end
         end
     end
@@ -138,7 +142,7 @@ function widget:UnitEnteredRadar(unitID, unitTeam, allyTeam, unitDefID)
         if SafeZone.ValidGridPos(ugx,ugz) then
             if(
                 SafeZone.SafeZoneGrid[ugx][ugz].DangerTime-SafeZone.GameTime
-                < FramePerSecond* SafeZone.SafeTime) then
+                < SafeZone.SafeTime) then
                 spMarkerAddPoint(ux,0,uz,"warning",true)
             end
             SafeZone.SetZoneDanger(ugx,ugz)

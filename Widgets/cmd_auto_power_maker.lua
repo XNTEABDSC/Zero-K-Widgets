@@ -10,8 +10,3 @@ function widget:GetInfo()
 	}
 end
 
-
---[[
-local place, feature = Spring.TestBuildOrder(buildTestUnitDefID, x, 0 ,z, direction)
-x,y,z=Spring.Pos2BuildPos(unitDefID, x, y, z, facing)
-]]

@@ -1,5 +1,5 @@
 if(WG.EZDrawer==nil) then
-    VFS.Include("LuaUI/Configs/WackyBagToWG.lua")
+    VFS.Include("LuaUI/Libs/WackyBagToWG.lua")
     local EZDrawer={}
     --- ez drawer, can be called anytime and draw
     WG.EZDrawer=EZDrawer
@@ -116,4 +116,15 @@ if(WG.EZDrawer==nil) then
         end
         glBeginEnd(GL_LINES,fn)
     end
+
+    function DrawerTemplates.EZDrawTimedVec(frompx,frompy,frompz,topx,topy,topz,color,LineWidth,arrLenRatio,time)
+        local coloralpha=color[4]
+        local drawfn=function (tl,tm)
+            color[4]=coloralpha*(tl/tm)
+            EZDrawer.DrawerTemplates.DrawVecVer(frompx,frompy,frompz,topx,topy,topz,color,LineWidth,arrLenRatio)
+        end
+        local timedfn=EZDrawer.DrawerTemplates.DrawTimed(drawfn,time)
+        EZDrawer.Add(timedfn)
+    end
 end
+

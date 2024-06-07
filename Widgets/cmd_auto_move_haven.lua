@@ -78,13 +78,13 @@ gui_havens.lua-----------
     end
 ]]
 
-VFS.Include("LuaUI/Configs/WackyBagToWG.lua")
+VFS.Include("LuaUI/Libs/WackyBagToWG.lua")
 local WackyBag=WG.WackyBag
 
-VFS.Include("LuaUI/Configs/SafeZone.lua")
+VFS.Include("LuaUI/Libs/SafeZone.lua")
 local SafeZone=WG.SafeZone
 
-VFS.Include("LuaUI/Configs/EZDrawer.lua")
+VFS.Include("LuaUI/Libs/EZDrawer.lua")
 local EZDrawer=WG.EZDrawer
 
 local spGetMyTeamID=Spring.GetMyTeamID
@@ -96,8 +96,20 @@ local spSendLuaRulesMsg=Spring.SendLuaRulesMsg
 local RADIUS = 160 --retreat zone radius
 local DIAM = RADIUS * 2
 local RADSQ = RADIUS * RADIUS
+---@type unordered_list<{x:number,z:number}> -- 
+-- ---@type {count:integer,data:{[integer]:{x:number,z:number}}}
+local teamHavens=WackyBag.collections.unordered_list.new() --{count = 0, items = {}}--
 
-local teamHavens={count = 0, data = {}}
+--- movedHavens[id]=[x,z]
+---@type unordered_list<[number,number]>
+
+
+--- movedHavens[id]=[(from):[x,z],(to):[gx,gz]]
+---@type unordered_list<[ [number,number],([integer,integer]|nil) ]>
+local movedHavens=WackyBag.collections.unordered_list.new()
+
+local havenIsSafeTime=0*Game.gameSpeed
+local havenMoveSafeTime=-2.5*Game.gameSpeed
 
 function GetHavens()
     local teamID=spGetMyTeamID()
@@ -106,7 +118,7 @@ function GetHavens()
     if havenCount then
         teamHavens.count=havenCount
         for i = 1, havenCount do
-            teamHavens.data[i] = {
+            teamHavens.items[i] = {
                 x = Spring.GetTeamRulesParam(teamID, "haven_x" .. i),
                 z = Spring.GetTeamRulesParam(teamID, "haven_z" .. i)
             }
@@ -138,45 +150,53 @@ end
 
 local updateTime=30
 
+---@return integer|nil
+local function PosHaveHaven(x,z,ignorehaven)
+    ignorehaven=ignorehaven or -1
+    for enumhavenId = 1, teamHavens.count do
+        if(enumhavenId~=ignorehaven)  then
+            local dx,dz=teamHavens.items[enumhavenId].x-x,teamHavens.items[enumhavenId].z-z
+            if (dx*dx+dz*dz)<RADSQ then
+                return enumhavenId
+            end
+        end
+    end
+    return nil
+end
+
 function widget:GameFrame(n)
     if(n % updateTime==0) then
         GetHavens()
         local changed=false
         editing=true
         for havenId = 1, teamHavens.count do
-            local px,pz=teamHavens.data[havenId].x,teamHavens.data[havenId].z
+            local px,pz=teamHavens.items[havenId].x,teamHavens.items[havenId].z
             --spMarkerAddPoint(px,0,pz,"haven" .. havenId)
             local gx,gz=SafeZone.PosToGrid(px,pz)
-            if(SafeZone.SafeZoneGrid[gx][gz].DangerTime>SafeZone.GameTime)then
-                local newgx,newgz=SafeZone.FindClosestSafeZone(gx,gz,-2.5)
+            if(SafeZone.SafeZoneGrid[gx][gz].DangerTime-SafeZone.GameTime>havenIsSafeTime)then
+                local newgx,newgz=SafeZone.FindClosestSafeZone(gx,gz,havenMoveSafeTime)
                 if(newgz==nil) then
+                    movedHavens:add({{px,pz},nil})
                 else
+                    ---@cast newgx integer
+                    ---@cast newgz integer
                     local py=spGetGroundHeight(px,pz)
                     spSendLuaRulesMsg('sethaven|' .. px .. '|' .. py .. '|' .. pz )
-
                     local newx,newz=SafeZone.GridPosToCenter(newgx,newgz)
-                    teamHavens.data[havenId].x,teamHavens.data[havenId].z=newx,newz
-                    local duplicateHaven=false
-                    for enumhavenId = 1, teamHavens.count do
-                        if(enumhavenId~=havenId)  then
-                            local dx,dz=teamHavens.data[enumhavenId].x-newx,teamHavens.data[enumhavenId].z-newz
-                            if (dx*dx+dz*dz)<RADSQ then
-                                duplicateHaven=true
-                                break
-                            end
-                        end
-                    end
+                    local duplicateHaven= PosHaveHaven(newx,newz,havenId)~=nil
+                    
 
                     local newy=spGetGroundHeight(newx,newz)
+                    movedHavens:add({{px,pz},{newgx,newgz}})
+                    EZDrawer.DrawerTemplates.EZDrawTimedVec(px,py,pz,newx,newy,newz,{0,1,0,0.5},16,0.2,Game.gameSpeed*5)
+                    
                     if not duplicateHaven then
                         spSendLuaRulesMsg('sethaven|' .. newx .. '|' .. newy .. '|' .. newz )
+                        teamHavens.items[havenId].x,teamHavens.items[havenId].z=newx,newz
+                    else
+                        teamHavens:remove(havenId)
+                        havenId=havenId-1
                     end
-                    
-                    EZDrawer.Add(EZDrawer.DrawerTemplates.DrawTimed(function (tl,tm)
-                        EZDrawer.DrawerTemplates.DrawVecVer(px,py,pz,newx,newy,newz,{0,1,0,0.5*(tl/tm)},16,0.2)
-                    end,Game.gameSpeed*5))
-
-
                     changed=true
                 end
             end
@@ -184,6 +204,31 @@ function widget:GameFrame(n)
         if(changed) then
             GetHavens()
         end
+
+        for movedHavenId = 1, movedHavens.count do
+            local tarpx,tarpz=movedHavens[movedHavenId][1][1],movedHavens[movedHavenId][1][2]
+            local targx,targz=SafeZone.PosToGrid(tarpx,tarpz)
+            local tarpy=spGetGroundHeight(tarpx,tarpz)
+            if(SafeZone.ValidGridPos(targx,targz) and SafeZone.SafeZoneGrid[targx][targz].DangerTime-SafeZone.GameTime<havenMoveSafeTime) then
+                if(movedHavens[movedHavenId][2]~= nil) then
+                    local fromgx,fromgz=movedHavens[movedHavenId][2][1],movedHavens[movedHavenId][2][2]
+                    local frompx,frompz=SafeZone.GridPosToCenter(fromgx,fromgz)
+                    local frompy=spGetGroundHeight(frompx,frompz)
+                    local fromHaven=PosHaveHaven(frompx,frompz,-1)
+                    if fromHaven~=nil then
+                        -- spMarkerAddPoint(frompx,frompy,frompz,"removed")
+                        spSendLuaRulesMsg('sethaven|' .. frompx .. '|' .. frompy .. '|' .. frompz )
+                        teamHavens:remove(fromHaven)
+                    end
+                    EZDrawer.DrawerTemplates.EZDrawTimedVec(frompx,frompy,frompz,tarpx,tarpy,tarpz,{0,1,0,0.5},16,0.2,Game.gameSpeed*5)
+                    
+                end
+                spSendLuaRulesMsg('sethaven|' .. tarpx .. '|' .. tarpy .. '|' .. tarpz )
+                movedHavens:remove(movedHavenId)
+                movedHavenId=movedHavenId-1
+            end
+        end
+
         editing=false
     end
 end

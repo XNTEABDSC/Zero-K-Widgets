@@ -15,7 +15,7 @@ end
 
 local spGetSpectatingState=Spring.GetSpectatingState
 local spGetGroundHeight = Spring.GetGroundHeight
-VFS.Include("LuaUI/Configs/SafeZone.lua")
+VFS.Include("LuaUI/Libs/SafeZone.lua")
 local SafeZone= WG.SafeZone
 
 local GL_QUADS = GL.QUADS
@@ -26,7 +26,7 @@ local glVertex = gl.Vertex
 
 
 local FramePerSecond=30
-local TimeBase=-SafeZone.SafeTime*FramePerSecond
+local TimeBase=-SafeZone.SafeTime
 local MapSizeUnit=SafeZone.GridSize
 local MapWidth, MapHeight = Game.mapSizeX, Game.mapSizeZ
 local GridWitdh,GridHeight=SafeZone.GridWitdh,SafeZone.GridHeight
@@ -107,12 +107,12 @@ function widget:DrawWorld()
 	end
     if DrawOn then
         glLineWidth(2.0)
-        glColor(1, 0, 0,0.15)
+        glColor(1, 0, 0,0.2)
         for gx = 1, GridWitdh do
             for gz = 1, GridHeight do
                 --local dangerId=SafeZone.GridSafeState(SafeZone.SafeZoneGrid[gx][gz])
                 local color=ChooseColor(SafeZone.SafeZoneGrid[gx][gz].DangerTime-SafeZone.GameTime)
-                glColor(color[1],color[2],color[3],0.15)
+                glColor(color[1],color[2],color[3],0.2)
                 glBeginEnd(GL_QUADS,DrawRect,(gx-1)*MapSizeUnit,(gz-1)*MapSizeUnit,MapSizeUnit,MapSizeUnit)
             end
         end

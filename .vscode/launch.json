@@ -8,7 +8,7 @@
             "type": "lua",
             "request": "launch",
             "name": "Debug_WackyBag",
-            "program": "${workspaceFolder}/Configs/WackyBag_test/test.lua"
+            "program": "${workspaceFolder}/Libs/WackyBag_test/test.lua"
         }
     ]
 }

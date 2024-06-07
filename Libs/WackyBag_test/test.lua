@@ -15,7 +15,7 @@ VFS.Include=function (filename)
     return dofile("D:/Program Files (x86)/Steam/steamapps/common/Zero-K/" .. filename)
 end
 
-VFS.Include("LuaUI/Configs/WackyBagToWG.lua")
+VFS.Include("LuaUI/Libs/WackyBagToWG.lua")
 
 local WackyBag=WG.WackyBag
 

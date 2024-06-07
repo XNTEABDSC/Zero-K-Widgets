@@ -9,8 +9,8 @@ function widget:GetInfo()
 		enabled   = true,
 	}
 end
-VFS.Include("LuaUI/Configs/WackyBagToWG.lua")
-VFS.Include("LuaUI/Configs/EZDrawer.lua")
+VFS.Include("LuaUI/Libs/WackyBagToWG.lua")
+VFS.Include("LuaUI/Libs/EZDrawer.lua")
 
 local EZDrawer=WG.EZDrawer
 local datas=EZDrawer.datas
