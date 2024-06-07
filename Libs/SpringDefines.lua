@@ -49,6 +49,11 @@ function Spring.GetUnitDefID(unitId)end
 ---@return boolean
 function Spring.ValidUnitID(unitId)end
 
+---check whether unit is dead
+---@param unitId unitId
+---@return boolean
+function Spring.GetUnitIsDead(unitId)end
+
 ---check whether unit belongs to you
 ---@param unitId unitId
 function Spring.IsUnitAllied(unitId)end
@@ -122,3 +127,11 @@ function Spring.MarkerAddPoint(x,y,z,msg,onlyLocal)end
 ---@param y WldyPos
 ---@param z WldzPos
 function Spring.MarkerErasePosition(x,y,z)end
+
+---returns units in Cylinder
+---@param x WldxPos
+---@param z WldzPos
+---@param radius WldDist
+---@param teamId teamId
+---@return list<unitId>
+function Spring.GetUnitsInCylinder(x,z,radius,teamId)end

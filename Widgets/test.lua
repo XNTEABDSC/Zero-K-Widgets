@@ -15,5 +15,5 @@ function widget:Initialize()
     if(package ~=nil) then
         spEcho(package.path)
     end
-    spEcho(require)
+    spEcho(tostring(require) )
 end

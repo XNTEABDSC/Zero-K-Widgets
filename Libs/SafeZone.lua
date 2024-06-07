@@ -110,8 +110,10 @@ if WG.SafeZone==nil then
     --- SafeZoneGrid[gx][gz]={DangerTime}
     ---@type {[gridX]:{[gridZ]:SafeZoneGridObj}}
     SafeZone.SafeZoneGrid={}
+    ---@type {[gridX]:{[gridZ]:SafeZoneGridObj}}
     SafeZone.SafeZoneGridCache={}
     
+    ---@return SafeZoneGridObj
     local function CreateSafeZoneGridObj()
         return {
             DangerTime=0
@@ -120,11 +122,13 @@ if WG.SafeZone==nil then
 
     function SafeZone.InitGrid()
         for gx = 1,SafeZone.GridWitdh  do
+            ---@cast gx gridX
             SafeZone.SafeZoneGrid[gx]={}
             SafeZone.SafeZoneGridCache[gx]={}
             local gridx=SafeZone.SafeZoneGrid[gx]
             local gridx2=SafeZone.SafeZoneGridCache[gx]
             for gy = 1,SafeZone.GridHeight  do
+                ---@cast gx gridZ
                 gridx[gy]=CreateSafeZoneGridObj()
                 gridx2[gy]=CreateSafeZoneGridObj()
             end
@@ -226,13 +230,11 @@ if WG.SafeZone==nil then
     end
 
     --- set zone to be danger
-    
     ---@param gx gridX
     ---@param gz gridZ
     function SafeZone.SetZoneDanger(gx,gz)
         SafeZone.SetZoneDangerTimeUpTo(gx,gz,SafeZone.DangerInitTime)
     end
-
 
     --- update frequency of watch danger units, in frame
     ---@type frame
