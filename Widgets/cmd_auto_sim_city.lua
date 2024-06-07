@@ -1,7 +1,7 @@
 function widget:GetInfo()
 	return {
-		name      = "Auto power maker",
-		desc      = "automatically make energy\n",
+		name      = "Auto sim city",
+		desc      = "automatically build eco\n",
 		author    = "XNT",
 		date      = "date",
 		license   = "",

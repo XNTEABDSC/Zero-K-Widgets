@@ -24,7 +24,8 @@ function widget:Initialize()
 end
 
 local function SetTarForImpaler(unitID, tx, ty, tz, options)
-	local _, _, _, ux, uy, uz = spGetUnitPosition(unitID, true)
+	local ux, uy, uz = spGetUnitPosition(unitID)
+	--local _, _, _, ux, uy, uz = spGetUnitPosition(unitID, true)
 	local ox, oy, oz = tx - ux, ty - uy, tz - uz
 	local odir = math.atan2(oz, ox)
 

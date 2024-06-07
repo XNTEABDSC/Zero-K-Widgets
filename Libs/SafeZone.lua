@@ -13,6 +13,7 @@ if WG.SafeZone==nil then
     local spEcho=Spring.Echo
     local spGetMyTeamID=Spring.GetMyTeamID
     local spValidUnitID = Spring.ValidUnitID
+    ---@type framePerSec
     local FramePerSecond=30
     local spGetGroundHeight = Spring.GetGroundHeight
     local spIsPosInRadar		= Spring.IsPosInRadar
@@ -21,6 +22,9 @@ if WG.SafeZone==nil then
     local MapWidth, MapHeight = Game.mapSizeX, Game.mapSizeZ
     local SafeZone={}
     
+    ---@class gridX:integer
+    ---@class gridZ:integer
+
     --- Store where is safe<br>
     --- The world are splited into rectangles.<br>
     --- (SafeZone.SafeZoneGrid[gx][gz].DangerTime - SafeZone.GameTime) shows whether the grid is danger
@@ -30,15 +34,23 @@ if WG.SafeZone==nil then
     --- width,height count of rectangles
     SafeZone.GridWitdh,SafeZone.GridHeight=MapWidth/SafeZone.GridSize,MapHeight/SafeZone.GridSize
     --- current frame, (historical reasons: I d k Spring.GetGameFrame)
+    ---@type frame
     SafeZone.GameTime=0
     --- how fast do 'danger' spread. in frame
+    ---@type frame
     SafeZone.DangerSpreadTime=5*FramePerSecond
+    ---@type frame
     --- set when a grid is danger. in frame
     SafeZone.DangerInitTime=10*FramePerSecond
     --- when the grid is safe. in frame
+    ---@type frame
     SafeZone.SafeTime=-10*FramePerSecond
     
     --- from world pos to its grid pos
+    ---@param x WldxPos
+    ---@param z WldzPos
+    ---@return gridX
+    ---@return gridZ
     function SafeZone.PosToGrid(x,z)
         if x==0 then
             x=1
@@ -46,25 +58,37 @@ if WG.SafeZone==nil then
         if z==0 then
             z=1
         end
+        ---@diagnostic disable-next-line: return-type-mismatch
         return math.ceil(x/SafeZone.GridSize),math.ceil(z/SafeZone.GridSize)
     end
 
     --- chech whether a grid pos is valid
+    ---@param gx gridX
+    ---@param gz gridZ
+    ---@return boolean
     function SafeZone.ValidGridPos(gx,gz)
         return gx~=nil and gx>=1 and gx<=SafeZone.GridWitdh and gz ~=nil and gz>=1 and gz<=SafeZone.GridHeight
     end
 
-    --- get unit's world pos and grid pos
+    --- get unit's world pos and grid position
+    ---@param unitID unitId
+    ---@return WldxPos
+    ---@return WldzPos
+    ---@return gridX
+    ---@return gridZ
     function SafeZone.UnitPosGridPos(unitID)
         local ux,_,uz=spGetUnitPosition(unitID)
-        ---@cast ux number
-        ---@cast uz number
         local ugx,ugz=SafeZone.PosToGrid(ux,uz)
         return ux,uz,ugx,ugz
     end
 
     --- from grid pos to grid's center world pos
+    ---@param gx gridX
+    ---@param gz gridZ
+    ---@return WldxPos
+    ---@return WldzPos
     function SafeZone.GridPosToCenter(gx,gz)
+        ---@diagnostic disable-next-line: return-type-mismatch
         return (gx-1)*SafeZone.GridSize+(SafeZone.GridSize/2),(gz-1)*SafeZone.GridSize+(SafeZone.GridSize/2)
     end
 
@@ -78,9 +102,13 @@ if WG.SafeZone==nil then
             return 3,"Safe"
         end
     end
+
+    ---@class SafeZoneGridObj
+    ---@field DangerTime frame
+
     --- stores state of grid<br>
     --- SafeZoneGrid[gx][gz]={DangerTime}
-    ---@type {DangerTime:integer}[][]
+    ---@type {[gridX]:{[gridZ]:SafeZoneGridObj}}
     SafeZone.SafeZoneGrid={}
     SafeZone.SafeZoneGridCache={}
     
@@ -172,14 +200,23 @@ if WG.SafeZone==nil then
         SafeZone.SafeZoneGridCache=temp
     end
 
+    ---@param gx gridX
+    ---@param gz gridZ
+    ---@return frame
     function SafeZone.GetZoneDangerTime(gx,gz)
         return SafeZone.SafeZoneGrid[gx][gz].DangerTime-SafeZone.GameTime
     end
 
+    ---@param gx gridX
+    ---@param gz gridZ
+    ---@param time frame
     function SafeZone.SetZoneDangerTime(gx,gz,time)
         SafeZone.SafeZoneGrid[gx][gz].DangerTime=time+SafeZone.GameTime
     end
 
+    ---@param gx gridX
+    ---@param gz gridZ
+    ---@param time frame
     function SafeZone.SetZoneDangerTimeUpTo(gx,gz,time)
         local realTime=time+SafeZone.GameTime
         if(SafeZone.SafeZoneGrid[gx][gz].DangerTime<realTime) then
@@ -189,12 +226,16 @@ if WG.SafeZone==nil then
     end
 
     --- set zone to be danger
+    
+    ---@param gx gridX
+    ---@param gz gridZ
     function SafeZone.SetZoneDanger(gx,gz)
         SafeZone.SetZoneDangerTimeUpTo(gx,gz,SafeZone.DangerInitTime)
     end
 
 
     --- update frequency of watch danger units, in frame
+    ---@type frame
     SafeZone.WatchDangerUnitsTimeDelta=6
 
     --- danger units, register when in radar, update per SafeZone.WatchDangerUnitsTimeDelta, set their grid pos to danger
@@ -209,7 +250,10 @@ if WG.SafeZone==nil then
         }
     end
     --- find closest SafeZone where DangerTime-GameTime < safetime
-    ---@return integer|nil,integer|nil
+    ---@param gx gridX
+    ---@param gz gridZ
+    ---@param safetime frame
+    ---@return gridX|nil,gridZ|nil
     function SafeZone.FindClosestSafeZone(gx,gz,safetime)
         safetime=(safetime or SafeZone.SafeTime)
         local maxDist=(SafeZone.GridHeight+SafeZone.GridWitdh)*SafeZone.GridSize
@@ -233,7 +277,26 @@ if WG.SafeZone==nil then
         return newx,newz
     end
 
-
+    ---@return fun():(gridX,gridZ)
+    function SafeZone.EnumGrid()
+        local x,z=1,1
+        return function()
+            if x == SafeZone.GridWitdh then
+                if z == SafeZone.GridHeight then
+                    ---@diagnostic disable-next-line: return-type-mismatch, missing-return-value
+                    return nil
+                else
+                    z=z+1
+                    x=1
+                end
+            else
+                x=x+1
+            end
+            
+            ---@diagnostic disable-next-line: return-type-mismatch
+            return x,z
+        end
+    end
 
 end
 return WG.SafeZone

@@ -27,7 +27,7 @@ local spIsPosInRadar		= Spring.IsPosInRadar
 local spIsPosInLos = Spring.IsPosInLos
 local SafeZone=WG.SafeZone
 
-
+---@type framePerSec
 local FramePerSecond=30
 local MapSizeUnit=SafeZone.GridSize
 local MapWidth, MapHeight = Game.mapSizeX, Game.mapSizeZ
@@ -50,16 +50,18 @@ local function WatchUnitUpdate()
         local posX,posY,posZ=spGetUnitPosition(id)
         if(posX == nil) then
             spMarkerAddPoint(obj.posX,obj.posY,obj.posZ,"odd nil unit pos")
-            
-        end
-        obj.posX=posX
-        obj.posY=posY
-        obj.posZ=posZ
+        
+        else
+            obj.posX=posX
+            obj.posY=posY
+            obj.posZ=posZ
 
-        local gx,gz=SafeZone.PosToGrid(posX,posZ)
-        if SafeZone.ValidGridPos(gx,gz) then
-            SafeZone.SetZoneDanger(gx,gz)
+            local gx,gz=SafeZone.PosToGrid(posX,posZ)
+            if SafeZone.ValidGridPos(gx,gz) then
+                SafeZone.SetZoneDanger(gx,gz)
+            end
         end
+        
         
     end
     --spEcho("game_message: ".. "watch unit count:" .. count)
@@ -67,7 +69,9 @@ end
 
 local function CheckRadarField()
     for gx = 1, GridWitdh do
+        ---@cast gx gridX
         for gz = 1, GridHeight do
+            ---@cast gz gridZ
             local px,pz=SafeZone.GridPosToCenter(gx,gz)
             local py=spGetGroundHeight(px,pz)+256
 
@@ -89,12 +93,10 @@ local SafeZone_Marker_Command_On=false
 local RemoveMarkerOfShowSafeZoneFlag=0
 
 local function ShowSafeZone()
-    for gx = 1, GridWitdh do
-        for gz = 1, GridHeight do
-            local px,pz=SafeZone.GridPosToCenter(gx,gz)
-            local _,SafeStr=SafeZone.GridSafeState(SafeZone.SafeZoneGrid[gx][gz])
-            spMarkerAddPoint(px,spGetGroundHeight(px,pz),pz,SafeStr,true)
-        end
+    for gx,gz in SafeZone.EnumGrid() do
+        local px,pz=SafeZone.GridPosToCenter(gx,gz)
+        local _,SafeStr=SafeZone.GridSafeState(SafeZone.SafeZoneGrid[gx][gz])
+        spMarkerAddPoint(px,spGetGroundHeight(px,pz),pz,SafeStr,true)
     end
     RemoveMarkerOfShowSafeZoneFlag=2;
 end
@@ -103,13 +105,10 @@ local function RemoveMarkerOfShowSafeZone()
     if RemoveMarkerOfShowSafeZoneFlag>1 then
         RemoveMarkerOfShowSafeZoneFlag=RemoveMarkerOfShowSafeZoneFlag-1
     elseif RemoveMarkerOfShowSafeZoneFlag==1 then
-        for gx = 1, GridWitdh do
-            for gz = 1, GridHeight do
-                local px,pz=SafeZone.GridPosToCenter(gx,gz)
-                spMarkerErasePosition(px,spGetGroundHeight(px,pz),pz)
-            end
+        for gx,gz in SafeZone.EnumGrid() do
+            local px,pz=SafeZone.GridPosToCenter(gx,gz)
+            spMarkerErasePosition(px,spGetGroundHeight(px,pz),pz)
         end
-        RemoveMarkerOfShowSafeZoneFlag=0
     end
 end
 

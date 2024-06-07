@@ -108,13 +108,10 @@ function widget:DrawWorld()
     if DrawOn then
         glLineWidth(2.0)
         glColor(1, 0, 0,0.2)
-        for gx = 1, GridWitdh do
-            for gz = 1, GridHeight do
-                --local dangerId=SafeZone.GridSafeState(SafeZone.SafeZoneGrid[gx][gz])
-                local color=ChooseColor(SafeZone.SafeZoneGrid[gx][gz].DangerTime-SafeZone.GameTime)
-                glColor(color[1],color[2],color[3],0.2)
-                glBeginEnd(GL_QUADS,DrawRect,(gx-1)*MapSizeUnit,(gz-1)*MapSizeUnit,MapSizeUnit,MapSizeUnit)
-            end
+        for gx,gz in SafeZone.EnumGrid() do
+            local color=ChooseColor(SafeZone.SafeZoneGrid[gx][gz].DangerTime-SafeZone.GameTime)
+            glColor(color[1],color[2],color[3],0.2)
+            glBeginEnd(GL_QUADS,DrawRect,(gx-1)*MapSizeUnit,(gz-1)*MapSizeUnit,MapSizeUnit,MapSizeUnit)
         end
     end
 end

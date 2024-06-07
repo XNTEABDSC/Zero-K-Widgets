@@ -96,7 +96,7 @@ local spSendLuaRulesMsg=Spring.SendLuaRulesMsg
 local RADIUS = 160 --retreat zone radius
 local DIAM = RADIUS * 2
 local RADSQ = RADIUS * RADIUS
----@type unordered_list<{x:number,z:number}> -- 
+---@type unordered_list<{x:WldxPos,z:WldzPos}> -- 
 -- ---@type {count:integer,data:{[integer]:{x:number,z:number}}}
 local teamHavens=WackyBag.collections.unordered_list.new() --{count = 0, items = {}}--
 
@@ -105,7 +105,7 @@ local teamHavens=WackyBag.collections.unordered_list.new() --{count = 0, items =
 
 
 --- movedHavens[id]=[(from):[x,z],(to):[gx,gz]]
----@type unordered_list<[ [number,number],([integer,integer]|nil) ]>
+---@type unordered_list<[ [WldxPos,WldzPos],([gridX,gridZ]|nil) ]>
 local movedHavens=WackyBag.collections.unordered_list.new()
 
 local havenIsSafeTime=0*Game.gameSpeed
@@ -175,11 +175,9 @@ function widget:GameFrame(n)
             local gx,gz=SafeZone.PosToGrid(px,pz)
             if(SafeZone.SafeZoneGrid[gx][gz].DangerTime-SafeZone.GameTime>havenIsSafeTime)then
                 local newgx,newgz=SafeZone.FindClosestSafeZone(gx,gz,havenMoveSafeTime)
-                if(newgz==nil) then
+                if newgz==nil or newgx==nil then
                     movedHavens:add({{px,pz},nil})
                 else
-                    ---@cast newgx integer
-                    ---@cast newgz integer
                     local py=spGetGroundHeight(px,pz)
                     spSendLuaRulesMsg('sethaven|' .. px .. '|' .. py .. '|' .. pz )
                     local newx,newz=SafeZone.GridPosToCenter(newgx,newgz)
