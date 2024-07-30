@@ -17,22 +17,31 @@ Spring={}
 ---@operator mul(timeSec):frame
 
 ---@class WldDist:number
----@operator div(timeSec):WldSpeed
+---@operator div(frame):WldSpeed
 ---@class WldxPos:number
----@operator div(timeSec):WldxVel
+---@operator div(frame):WldxVel
+---@operator add(WldxPos):WldxPos
+---@operator add(WldxVel):WldxPos
 ---@class WldyPos:number
----@operator div(timeSec):WldyVel
+---@operator div(frame):WldyVel
+---@operator add(WldyPos):WldyPos
+---@operator add(WldyVel):WldyPos
 ---@class WldzPos:number
----@operator div(timeSec):WldzVel
+---@operator div(frame):WldzVel
+---@operator add(WldzPos):WldzPos
+---@operator add(WldzVel):WldzPos
 
 ---@class WldSpeed:number
----@operator mul(timeSec):WldDist
+---@operator mul(frame):WldDist
 ---@class WldxVel:number
----@operator mul(timeSec):WldxPos
+---@operator mul(frame):WldxPos
+---@operator add(WldxVel):WldxVel
 ---@class WldyVel:number
----@operator mul(timeSec):WldyPos
+---@operator mul(frame):WldyPos
+---@operator add(WldyVel):WldyVel
 ---@class WldzVel:number
----@operator mul(timeSec):WldzPos
+---@operator mul(frame):WldzPos
+---@operator add(WldzVel):WldzVel
 
 --- show message to console. `"game_message: ".. msg` to show `msg` at chat (client only)
 ---@param msg string message to be shown
@@ -145,3 +154,29 @@ Game.gameSpeed=30
 Game.mapSizeX=512
 ---@type WldzPos
 Game.mapSizeZ=512
+
+
+---@class WeaponDefId
+---@class WeaponDef --:{id:WeaponDefId,[any]:any}
+---@field id WeaponDefId
+
+---@type list<WeaponDef>
+WeaponDefs={}
+
+
+
+---@class ProjectileId:number
+
+---comment
+---@param projectileID ProjectileId
+---@return WldxPos
+---@return WldyPos
+---@return WldzPos
+function Spring.GetProjectilePosition(projectileID)end
+
+
+---@param projectileID ProjectileId
+---@return WldxVel
+---@return WldyVel
+---@return WldzVel
+function Spring.GetProjectileVelocity(projectileID)end

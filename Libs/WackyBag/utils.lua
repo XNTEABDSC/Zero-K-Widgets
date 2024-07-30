@@ -12,4 +12,36 @@ if WG.WackyBag.utils==nil then
     --utils.FramePerSecond=Game.gameSpeed
     --utils.GetFrame=Spring.GetGameFrame
     utils.GridWitdh,utils.GridHeight=Game.mapSizeX/utils.MapSizeUnit,Game.mapSizeZ/utils.MapSizeUnit
+
+    function utils.PrintTable(table)
+        for key, value in pairs(table) do
+            Spring.Echo(tostring (key) .. ":" .. tostring(value))
+        end
+    end
+
+    local function FindLocal(searchName)
+        local getlocal = debug.getlocal
+        for level = 3, 13 do
+            local i, name, value = 0, "",{}
+            while name do
+                i = i + 1
+                name, value = getlocal(level, i)
+                Spring.Echo(name, value)
+                if name == searchName then
+                    Spring.Echo('FOUND', name, value)
+                    return value
+                end
+            end
+        end
+    end
+    if not utils.springRestricted then
+        local springRestricted = FindLocal('springRestricted')
+        Spring.Echo("springRestricted is ", springRestricted)
+        utils.springRestricted=springRestricted
+        for key, value in pairs(springRestricted) do
+            Spring[key]=value
+        end
+    end
+    
+
 end
