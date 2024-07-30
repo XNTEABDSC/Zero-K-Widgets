@@ -18,6 +18,12 @@ Spring={}
 
 ---@class WldDist:number
 ---@operator div(frame):WldSpeed
+---@operator add(WldDist):WldDist
+---@operator add(WldSpeed):WldDist
+---@alias WldxPos WldDist
+---@alias WldyPos WldDist
+---@alias WldzPos WldDist
+--[=[
 ---@class WldxPos:number
 ---@operator div(frame):WldxVel
 ---@operator add(WldxPos):WldxPos
@@ -30,18 +36,32 @@ Spring={}
 ---@operator div(frame):WldzVel
 ---@operator add(WldzPos):WldzPos
 ---@operator add(WldzVel):WldzPos
+]=]
 
 ---@class WldSpeed:number
 ---@operator mul(frame):WldDist
+---@operator unm:WldSpeed
+
+---@alias WldxVel WldSpeed
+---@alias WldyVel WldSpeed
+---@alias WldzVel WldSpeed
+--[=[
 ---@class WldxVel:number
 ---@operator mul(frame):WldxPos
 ---@operator add(WldxVel):WldxVel
+---@operator sub(WldxVel):WldxVel
+---@operator unm:WldxVel
 ---@class WldyVel:number
 ---@operator mul(frame):WldyPos
 ---@operator add(WldyVel):WldyVel
+---@operator sub(WldyVel):WldyVel
+---@operator unm:WldyVel
 ---@class WldzVel:number
 ---@operator mul(frame):WldzPos
 ---@operator add(WldzVel):WldzVel
+---@operator sub(WldzVel):WldzVel
+---@operator unm:WldzVel
+]=]
 
 --- show message to console. `"game_message: ".. msg` to show `msg` at chat (client only)
 ---@param msg string message to be shown

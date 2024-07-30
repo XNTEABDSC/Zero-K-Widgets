@@ -164,12 +164,12 @@ local function GetWatchWeaponDefs()
 		
 
 		if value.damages and (value.damages[0]>0) and 
-		(not value.flightTime or value.flightTime<=0.1 or value.flightTime>6)  and
-		( value.range and 400<value.range and value.startvelocity and 0<value.startvelocity and value.startvelocity<500 and 1<value.range/(value.startvelocity*Game.gameSpeed) )then -- and  
+		(not value.flightTime or value.flightTime<=0.1 or value.flightTime>6)  and (not value.beamburst) and
+		( value.range and 400<value.range and value.projectilespeed and 0<value.projectilespeed and value.projectilespeed<500 and 2<value.range/(value.projectilespeed*Game.gameSpeed) )then -- and  
 			
 			Spring.Echo("Get Weapon: " .. id .. "," .. value.name)
 			if( value.name=="SHIELDGUN") then
-				Spring.Echo("game_message: Felon's Weapon Vel: ".. value.startvelocity)
+				Spring.Echo("game_message: Felon's Weapon Vel: ".. value.projectilespeed)
 			end
 			PrintTable(value.damages)
 			-- Script.SetWatchWeapon(value.id,true)
@@ -211,6 +211,39 @@ local function EnumProjPath(proID,wpndef)
 		return oldposx,oldposy,oldposz,timeCount/initTimeCount
 	end
 end
+
+
+---comment
+---@param proID ProjectileId
+---@return fun():( WldxPos|nil,WldyPos|nil,WldzPos|nil,number|nil )
+local function EnumProjPrevPath(proID,wpndef)
+	local initTimeCount=Game.gameSpeed*8
+	local timeCount=initTimeCount
+	local posx,posy,posz=spGetProjectilePosition(proID)
+	local velx,vely,velz=spGetProjectileVelocity(proID)
+	velx,vely,velz=-velx,-vely,-velz
+	local grav= spGetProjectileGravity( proID )
+	if 1<WeaponDefs[wpndef].flightTime then
+		return function ()
+			return nil
+		end
+	end
+
+	return function ()
+		timeCount=timeCount-1
+		if 0>=timeCount then
+			return nil
+		end
+		if spGetGroundHeight(posx,posz)>posy then
+			return nil
+		end
+		local oldposx,oldposy,oldposz=posx,posy,posz
+		vely=vely+grav
+		posx,posy,posz=posx+velx,posy+vely,posz+velz
+		return oldposx,oldposy,oldposz,timeCount/initTimeCount
+	end
+end
+
 local spGetProjectileDefID=Spring.GetProjectileDefID
 local spGetProjectilesInRectangle=Spring.GetProjectilesInRectangle--Spring.GetVisibleProjectiles
 function widget:DrawWorld()
@@ -218,15 +251,29 @@ function widget:DrawWorld()
 	for _, projid in pairs(spGetProjectilesInRectangle(0,0,Game.mapSizeX,Game.mapSizeZ)) do
 		local WDId=spGetProjectileDefID(projid)
 		if NeededWpnInfo[WDId] then
-			local enumf=EnumProjPath(projid,WDId)
-			local oldx,oldy,oldz,oldtl=enumf()
-			for x,y,z,tl in enumf do
-				EZDrawer.DrawerTemplates.DrawLine(oldx,oldy,oldz,x,y,z,{aoeColor[1],aoeColor[2],aoeColor[3],aoeColor[4]* tl },NeededWpnInfo[WDId].lineWidth*scatterLineWidthMult/mouseDistance)
-				oldx,oldy,oldz,oldtl=x,y,z,tl
+			do
+				local enumf=EnumProjPath(projid,WDId)
+				local oldx,oldy,oldz,oldtl=enumf()
+				for x,y,z,tl in enumf do
+					EZDrawer.DrawerTemplates.DrawLine(oldx,oldy,oldz,x,y,z,{aoeColor[1],aoeColor[2],aoeColor[3],aoeColor[4]* tl },NeededWpnInfo[WDId].lineWidth*scatterLineWidthMult/mouseDistance)
+					oldx,oldy,oldz,oldtl=x,y,z,tl
+				end
+				if oldtl and 0.1<oldtl and NeededWpnInfo[WDId] then -- hit ground
+					DrawAoe(oldx,oldy,oldz,NeededWpnInfo[WDId].aoe,oldtl)
+				end
 			end
-			if oldtl and 0.1<oldtl and NeededWpnInfo[WDId] then -- hit ground
-				DrawAoe(oldx,oldy,oldz,NeededWpnInfo[WDId].aoe,oldtl)
+			
+			do
+				local enumPrev=EnumProjPrevPath(projid,WDId)
+				local oldx,oldy,oldz,oldtl=enumPrev()
+				for x,y,z,tl in enumPrev do
+					EZDrawer.DrawerTemplates.DrawLine(oldx,oldy,oldz,x,y,z,{aoeColor[1],aoeColor[2],aoeColor[3],aoeColor[4]* tl },NeededWpnInfo[WDId].lineWidth*scatterLineWidthMult/mouseDistance)
+					oldx,oldy,oldz,oldtl=x,y,z,tl
+				end
 			end
+
+
+
 		end
 			
 	end
