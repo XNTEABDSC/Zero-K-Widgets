@@ -1,7 +1,7 @@
 function widget:GetInfo()
 	return {
 		name      = "arti drawer",
-		desc      = "draw arti land pos",
+		desc      = "draw artillery projectile path",
 		author    = "XNT",
 		date      = "date",
 		license   = "",
@@ -181,7 +181,7 @@ local function GetWatchWeaponDefs()
 	end
 end
 
----@type {[ProjectileId]:{proOwnerID:unitId,weaponDefID:WeaponDefId}}
+---@type {[ProjectileId]:{proOwnerID:UnitId,weaponDefID:WeaponDefId}}
 
 
 ---comment
@@ -246,9 +246,10 @@ end
 
 local spGetProjectileDefID=Spring.GetProjectileDefID
 local spGetProjectilesInRectangle=Spring.GetProjectilesInRectangle--Spring.GetVisibleProjectiles
+local wgGetProjectiles=WG.WackyBag.utils.get_proj.GetProjList
 function widget:DrawWorld()
 	mouseDistance= GetMouseDistance() or 1000
-	for _, projid in pairs(spGetProjectilesInRectangle(0,0,Game.mapSizeX,Game.mapSizeZ)) do
+	for _, projid in pairs(wgGetProjectiles()) do
 		local WDId=spGetProjectileDefID(projid)
 		if NeededWpnInfo[WDId] then
 			do
@@ -259,7 +260,7 @@ function widget:DrawWorld()
 					oldx,oldy,oldz,oldtl=x,y,z,tl
 				end
 				if oldtl and 0.1<oldtl and NeededWpnInfo[WDId] then -- hit ground
-					DrawAoe(oldx,oldy,oldz,NeededWpnInfo[WDId].aoe,oldtl)
+					DrawAoe(oldx,oldy+16,oldz,NeededWpnInfo[WDId].aoe,oldtl)
 				end
 			end
 			

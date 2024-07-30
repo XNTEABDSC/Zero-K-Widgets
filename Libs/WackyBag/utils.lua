@@ -43,5 +43,28 @@ if WG.WackyBag.utils==nil then
         end
     end
     
+    VFS.Include(WG.WackyBag.path .. "utils/get_proj.lua")
 
+    local spGiveOrderToUnit=Spring.GiveOrderToUnit
+    local CMD_INSERT=CMD.INSERT
+    function utils.InsertOrderToUnit(unitId,DoLocatePosition,Tag,CmdId,params,option)
+
+        local insertparams={Tag,CmdId,option}
+        ---@type any
+        local insertOption=0
+
+        for index, value in ipairs(params) do
+            insertparams[index+3]=value
+        end
+        
+        if DoLocatePosition then
+            insertOption={"alt"}
+        end
+        Spring.GiveOrderToUnit(
+            unitId,
+            CMD_INSERT,
+            insertparams,
+            insertOption
+        );
+    end
 end

@@ -2,7 +2,7 @@
 ---@meta Spring
 
 Spring={}
----@class unitId : integer
+---@class UnitId : integer
 ---@class unitDefId:integer
 
 ---@class playerId:integer
@@ -68,31 +68,31 @@ Spring={}
 function Spring.Echo(msg)end
 
 
----@param unitId unitId
+---@param UnitId UnitId
 ---@return unitDefId
 ---@nodiscard
-function Spring.GetUnitDefID(unitId)end
+function Spring.GetUnitDefID(UnitId)end
 
----check whether unitId is valid
----@param unitId unitId
+---check whether UnitId is valid
+---@param UnitId UnitId
 ---@return boolean
-function Spring.ValidUnitID(unitId)end
+function Spring.ValidUnitID(UnitId)end
 
 ---check whether unit is dead
----@param unitId unitId
+---@param UnitId UnitId
 ---@return boolean
-function Spring.GetUnitIsDead(unitId)end
+function Spring.GetUnitIsDead(UnitId)end
 
 ---check whether unit belongs to you
----@param unitId unitId
-function Spring.IsUnitAllied(unitId)end
+---@param UnitId UnitId
+function Spring.IsUnitAllied(UnitId)end
 
 --- return unit's base position (bottom),<br>
 --- unit's middle position with returnMidPos<br>
 --- unit's aim position with returnAimPos<br>
 --- extra values are pushed behind<br>
---- eg `posx,posy,posz,aimx,aimy,aimz=spGetUnitPosition(unitId,false,true)`
----@param unitId unitId
+--- eg `posx,posy,posz,aimx,aimy,aimz=spGetUnitPosition(UnitId,false,true)`
+---@param UnitId UnitId
 ---@return WldxPos
 ---@return WldyPos
 ---@return WldzPos
@@ -102,14 +102,14 @@ function Spring.IsUnitAllied(unitId)end
 ---@return WldxPos
 ---@return WldyPos
 ---@return WldzPos
-function Spring.GetUnitPosition(unitId,returnMidPos,returnAimPos)end
+function Spring.GetUnitPosition(UnitId,returnMidPos,returnAimPos)end
 
----@param unitId unitId
+---@param UnitId UnitId
 ---@return WldxVel
 ---@return WldyVel
 ---@return WldzVel
 ---@return WldSpeed
-function Spring.GetUnitVelocity(unitId)end
+function Spring.GetUnitVelocity(UnitId)end
 
 --- get the height of the ground at the pos
 ---@param x WldxPos
@@ -162,7 +162,7 @@ function Spring.MarkerErasePosition(x,y,z)end
 ---@param z WldzPos
 ---@param radius WldDist
 ---@param teamId teamId
----@return list<unitId>
+---@return list<UnitId>
 function Spring.GetUnitsInCylinder(x,z,radius,teamId)end
 
 
@@ -200,3 +200,7 @@ function Spring.GetProjectilePosition(projectileID)end
 ---@return WldyVel
 ---@return WldzVel
 function Spring.GetProjectileVelocity(projectileID)end
+
+---@param projId ProjectileId
+---@return WeaponDefId
+function Spring.GetProjectileDefID(projId)end

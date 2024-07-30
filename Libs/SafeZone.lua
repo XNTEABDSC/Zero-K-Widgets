@@ -76,7 +76,7 @@ if WG.SafeZone==nil then
     end
 
     --- get unit's world pos and grid position
-    ---@param unitID unitId
+    ---@param unitID UnitId
     ---@return WldxPos
     ---@return WldzPos
     ---@return gridX

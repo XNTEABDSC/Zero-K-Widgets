@@ -1,6 +1,6 @@
 if WG.WackyBag.collections.unordered_list==nil then
     --- when remove one, the latest will be moved to the vacancy
-    ---@class unordered_list<T>:{ [integer]:T,count:integer,items:{[integer]:T}, add:(fun(self:unordered_list<T>,item:T):integer),remove:(fun(self:unordered_list<T>,index:integer):T)}
+    ---@class unordered_list<T>:{ [integer]:T,count:integer,items:{[integer]:T}, add:(fun(self:unordered_list<T>,item:T):integer),remove:(fun(self:unordered_list<T>,index:integer):T),enum:(fun(self:unordered_list<T>):(fun():(T,integer)))}
     local unordered_list= {}
     WG.WackyBag.collections.unordered_list=unordered_list
 
@@ -45,4 +45,17 @@ if WG.WackyBag.collections.unordered_list==nil then
         return res
     end
 
+    ---@generic T
+    ---@param self unordered_list<T>
+    ---@return fun():(T,integer)
+    function unordered_list.metatable:enum()
+        local id=0
+        return function ()
+            id=id+1
+            if (id>self.count) then
+                return nil
+            end
+            return self.items[id],id
+        end
+    end
 end
