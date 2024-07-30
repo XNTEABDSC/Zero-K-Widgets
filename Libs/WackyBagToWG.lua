@@ -9,6 +9,7 @@ if (WG.WackyBag==nil) then
     --WackyBag.collections.priority_queue = VFS.Include(WackyBag.path .. "collections/priority_queue.lua")
     VFS.Include(WackyBag.path .. "collections/priority_queue.lua")
     VFS.Include(WackyBag.path .. "collections/unordered_list.lua")
+    VFS.Include(WackyBag.path .. "collections/uid_sid_list.lua")
     WackyBag.structures={}
     WackyBag.calculates={}
     --WackyBag.calculates.grid_enum = VFS.Include(WackyBag.path .. "calculates/grid_enum.lua")

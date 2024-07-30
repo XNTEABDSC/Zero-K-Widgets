@@ -177,7 +177,7 @@ Game.mapSizeZ=512
 
 
 ---@class WeaponDefId
----@class WeaponDef --:{id:WeaponDefId,[any]:any}
+---@class WeaponDef:any --:{id:WeaponDefId,[any]:any}
 ---@field id WeaponDefId
 
 ---@type list<WeaponDef>
@@ -204,3 +204,5 @@ function Spring.GetProjectileVelocity(projectileID)end
 ---@param projId ProjectileId
 ---@return WeaponDefId
 function Spring.GetProjectileDefID(projId)end
+
+CMD={}

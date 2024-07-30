@@ -119,7 +119,7 @@ function GetHavens()
     if havenCount then
         teamHavens.count=havenCount
         for i = 1, havenCount do
-            teamHavens.items[i] = {
+            teamHavens[i] = {
                 x = Spring.GetTeamRulesParam(teamID, "haven_x" .. i),
                 z = Spring.GetTeamRulesParam(teamID, "haven_z" .. i)
             }
@@ -142,7 +142,7 @@ function MyHavenUpdate(teamID, allyTeamID)
 end
 
 function widget:Initialize()
-    if WackyBag.utils.DisableForSpec() then
+    if WackyBag.utils.DisableForSpec(widgetHandler) then
         return
     end
     
@@ -156,7 +156,7 @@ local function PosHaveHaven(x,z,ignorehaven)
     ignorehaven=ignorehaven or -1
     for enumhavenId = 1, teamHavens.count do
         if(enumhavenId~=ignorehaven)  then
-            local dx,dz=teamHavens.items[enumhavenId].x-x,teamHavens.items[enumhavenId].z-z
+            local dx,dz=teamHavens[enumhavenId].x-x,teamHavens[enumhavenId].z-z
             if (dx*dx+dz*dz)<RADSQ then
                 return enumhavenId
             end
@@ -171,7 +171,7 @@ function widget:GameFrame(n)
         local changed=false
         editing=true
         for havenId = 1, teamHavens.count do
-            local px,pz=teamHavens.items[havenId].x,teamHavens.items[havenId].z
+            local px,pz=teamHavens[havenId].x,teamHavens[havenId].z
             --spMarkerAddPoint(px,0,pz,"haven" .. havenId)
             local gx,gz=SafeZone.PosToGrid(px,pz)
             if(SafeZone.SafeZoneGrid[gx][gz].DangerTime-SafeZone.GameTime>havenIsSafeTime)then
@@ -191,7 +191,7 @@ function widget:GameFrame(n)
                     
                     if not duplicateHaven then
                         spSendLuaRulesMsg('sethaven|' .. newx .. '|' .. newy .. '|' .. newz )
-                        teamHavens.items[havenId].x,teamHavens.items[havenId].z=newx,newz
+                        teamHavens[havenId].x,teamHavens[havenId].z=newx,newz
                     else
                         teamHavens:remove(havenId)
                         havenId=havenId-1

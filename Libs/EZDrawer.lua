@@ -74,7 +74,16 @@ if(WG.EZDrawer==nil) then
         end
     end
 
-
+    
+    ---draw a line
+    ---@param x1 number
+    ---@param y1 number
+    ---@param z1 number
+    ---@param x2 number
+    ---@param y2 number
+    ---@param z2 number
+    ---@param color color
+    ---@param linewidth number
     function DrawerTemplates.DrawLine (x1,y1,z1,x2,y2,z2,color,linewidth)
         glLineWidth(linewidth)
         glColor(color[1],color[2],color[3],color[4])

@@ -156,22 +156,25 @@ local function GetWatchWeaponDefs()
 		end
 	end
 	]]
+	Spring.Echo("gameSpeed: "..Game.gameSpeed)
 	for id, _ in pairs(WeaponDefs) do
 		local value=WeaponDefs[id]
-		Spring.Echo("Wpn: " .. id)
+		Spring.Echo("Wpn: " .. id .. ", name: " .. value.name)
 		
 		--Spring.Echo("game_message: check wpn: " .. value.name .. ", dmg: " .. tostring( value.damages) .. ", range: " .. tostring( value.range) ..", vel: " .. tostring(value.startvelocity))
-		
-
+		Spring.Echo("Damages:")
+		PrintTable(value.damages)
+		Spring.Echo("flightTime: " .. tostring(value.flightTime) .. ", range: " .. tostring(value.range).. ", projSpeed: " .. tostring(value.projectilespeed))
+		Spring.Echo("beamTTL:",value.beamTTL,"beamtime: ",value.beamtime)
 		if value.damages and (value.damages[0]>0) and 
 		(not value.flightTime or value.flightTime<=0.1 or value.flightTime>6)  and (not value.beamburst) and
-		( value.range and 400<value.range and value.projectilespeed and 0<value.projectilespeed and value.projectilespeed<500 and 2<value.range/(value.projectilespeed*Game.gameSpeed) )then -- and  
+		--( value.range and 400<value.range and value.projectilespeed and 0<value.projectilespeed and value.projectilespeed*Game.gameSpeed<500 and 0.5<value.range/(value.projectilespeed*Game.gameSpeed) )
+		(value.range and 600<=value.range and value.projectilespeed and 0<value.projectilespeed and value.projectilespeed<50 )and 
+		(value.beamTTL ==0 and value.beamtime==1)
+		then -- and  
 			
-			Spring.Echo("Get Weapon: " .. id .. "," .. value.name)
-			if( value.name=="SHIELDGUN") then
-				Spring.Echo("game_message: Felon's Weapon Vel: ".. value.projectilespeed)
-			end
-			PrintTable(value.damages)
+			Spring.Echo("Get Weapon: "  .. value.name)
+			
 			-- Script.SetWatchWeapon(value.id,true)
 			NeededWpnInfo[value.id]={
 				aoe=value.damageAreaOfEffect,
@@ -260,7 +263,7 @@ function widget:DrawWorld()
 					oldx,oldy,oldz,oldtl=x,y,z,tl
 				end
 				if oldtl and 0.1<oldtl and NeededWpnInfo[WDId] then -- hit ground
-					DrawAoe(oldx,oldy+16,oldz,NeededWpnInfo[WDId].aoe,oldtl)
+					DrawAoe(oldx,oldy,oldz,NeededWpnInfo[WDId].aoe,oldtl)
 				end
 			end
 			

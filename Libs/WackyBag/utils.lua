@@ -1,7 +1,7 @@
 if WG.WackyBag.utils==nil then
     local utils={}
     WG.WackyBag.utils=utils
-    function utils.DisableForSpec()
+    function utils.DisableForSpec(widgetHandler)
         if Spring.GetSpectatingState() then
             widgetHandler:RemoveWidget()
             return true
@@ -26,9 +26,9 @@ if WG.WackyBag.utils==nil then
             while name do
                 i = i + 1
                 name, value = getlocal(level, i)
-                Spring.Echo(name, value)
+                --Spring.Echo(name, value)
                 if name == searchName then
-                    Spring.Echo('FOUND', name, value)
+                    --Spring.Echo('FOUND', name, value)
                     return value
                 end
             end
@@ -36,7 +36,7 @@ if WG.WackyBag.utils==nil then
     end
     if not utils.springRestricted then
         local springRestricted = FindLocal('springRestricted')
-        Spring.Echo("springRestricted is ", springRestricted)
+        --Spring.Echo("springRestricted is ", springRestricted)
         utils.springRestricted=springRestricted
         for key, value in pairs(springRestricted) do
             Spring[key]=value
