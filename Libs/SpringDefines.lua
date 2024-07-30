@@ -135,3 +135,13 @@ function Spring.MarkerErasePosition(x,y,z)end
 ---@param teamId teamId
 ---@return list<unitId>
 function Spring.GetUnitsInCylinder(x,z,radius,teamId)end
+
+
+Game={}
+--- framePerSec
+---@type framePerSec
+Game.gameSpeed=30
+---@type WldxPos
+Game.mapSizeX=512
+---@type WldzPos
+Game.mapSizeZ=512

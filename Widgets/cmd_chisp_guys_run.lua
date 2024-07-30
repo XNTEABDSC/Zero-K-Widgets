@@ -1,7 +1,7 @@
 function widget:GetInfo()
 	return {
 		name      = "Crisp Guys Run",
-		desc      = "Call units which has 99% retreat and no weapon to avoid danger zone",
+		desc      = "Call units which has 99% retreat and no range<=750m weapon to avoid danger zone",
 		author    = "XNT",
 		date      = "date",
 		license   = "",

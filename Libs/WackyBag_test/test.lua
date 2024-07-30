@@ -10,6 +10,7 @@ widgetHandler={}
 Game={}
 Game.mapSizeX=1
 Game.mapSizeZ=1
+Game.gameSpeed=30
 
 VFS.Include=function (filename)
     return dofile("D:/Program Files (x86)/Steam/steamapps/common/Zero-K/" .. filename)

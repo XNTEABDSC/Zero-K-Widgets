@@ -107,9 +107,10 @@ local teamHavens=WackyBag.collections.unordered_list.new() --{count = 0, items =
 --- movedHavens[id]=[(from):[x,z],(to):[gx,gz]]
 ---@type unordered_list<[ [WldxPos,WldzPos],([gridX,gridZ]|nil) ]>
 local movedHavens=WackyBag.collections.unordered_list.new()
-
-local havenIsSafeTime=0*Game.gameSpeed
-local havenMoveSafeTime=-2.5*Game.gameSpeed
+---@type frame
+local havenIsSafeTime=5*Game.gameSpeed
+---@type frame
+local havenMoveSafeTime=-5*Game.gameSpeed
 
 function GetHavens()
     local teamID=spGetMyTeamID()

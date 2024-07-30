@@ -32,7 +32,12 @@ if WG.SafeZone==nil then
     --- edge length of rectangles
     SafeZone.GridSize=256
     --- width,height count of rectangles
-    SafeZone.GridWitdh,SafeZone.GridHeight=MapWidth/SafeZone.GridSize,MapHeight/SafeZone.GridSize
+    ---@type gridX
+---@diagnostic disable-next-line: assign-type-mismatch
+    SafeZone.GridWitdh=MapWidth/SafeZone.GridSize
+    ---@type gridZ
+---@diagnostic disable-next-line: assign-type-mismatch
+    SafeZone.GridHeight=MapHeight/SafeZone.GridSize
     --- current frame, (historical reasons: I d k Spring.GetGameFrame)
     ---@type frame
     SafeZone.GameTime=0
@@ -53,10 +58,10 @@ if WG.SafeZone==nil then
     ---@return gridZ
     function SafeZone.PosToGrid(x,z)
         if x==0 then
-            x=1
+            x=0.1
         end
         if z==0 then
-            z=1
+            z=0.1
         end
         ---@diagnostic disable-next-line: return-type-mismatch
         return math.ceil(x/SafeZone.GridSize),math.ceil(z/SafeZone.GridSize)
@@ -258,7 +263,7 @@ if WG.SafeZone==nil then
     ---@return gridX|nil,gridZ|nil
     function SafeZone.FindClosestSafeZone(gx,gz,safetime)
         safetime=(safetime or SafeZone.SafeTime)
-        local maxDist=(SafeZone.GridHeight+SafeZone.GridWitdh)*SafeZone.GridSize
+        local maxDist=(SafeZone.GridHeight+SafeZone.GridWitdh)--*SafeZone.GridSize
         local newx,newz=nil,nil
         local enumFn=function (dist,dx,dz)
             if(dist>=maxDist) then
@@ -281,7 +286,7 @@ if WG.SafeZone==nil then
 
     ---@return fun():(gridX,gridZ)
     function SafeZone.EnumGrid()
-        local x,z=1,1
+        local x,z=0,1
         return function()
             if x == SafeZone.GridWitdh then
                 if z == SafeZone.GridHeight then

@@ -121,7 +121,7 @@ end
 
 function widget:Initialize()
     DisableForSpec()
-    Spring.Echo("game_message: " .."mapsize: (" .. MapWidth .. "," .. MapHeight .. ")")
+    --Spring.Echo("game_message: " .."mapsize: (" .. MapWidth .. "," .. MapHeight .. ")")
     
     SafeZone.InitGrid()
     TrySetSafeZone_MarkerCommandButton()
