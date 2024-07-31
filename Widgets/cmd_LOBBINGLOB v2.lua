@@ -209,6 +209,7 @@ function widget:GameFrame(n)
 							EZDrawer.DrawerTemplates.DrawLine(lobx,loby,lobz,likhox,likhoy,likhoz,{1,0,0,1},4)
 						end
 					))
+
 					local likhovx,likhovy,likhovz=spGetUnitVelocity(likhoInfo.id)
 					local offsetx,offsetz=lobx-likhox,lobz-likhoz
 					local distance=sqrt(offsetx*offsetx+offsetz*offsetz)
@@ -216,10 +217,8 @@ function widget:GameFrame(n)
 
 					local LikhoSpeedOnOffset=offsetNormX*likhovx+offsetNormZ*likhovz
 
-
 					if distance+(-LikhoSpeedOnOffset+EscapeSpeed)*(delayFrame-extraDelay) < LikhoRange then
 						--spGiveOrderToUnit(unitId.id,CMD_DGUN,{jumpX+unitx,jumpY,jumpZ+unitz},0)
-
 						
 						local jumpX,jumpZ=offsetNormX*JumpDistance,offsetNormZ*JumpDistance
 						local jumpY=spGetGroundHeight(jumpX,jumpZ)
