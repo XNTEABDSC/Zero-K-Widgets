@@ -838,5 +838,9 @@ return {
 			[1] = "upgradecomm",
 			[2] = "C+m",
 		},
+		[202] = {
+			[1] = "HideInterface",
+			[2] = "None",
+		},
 	},
 }
