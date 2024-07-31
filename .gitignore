@@ -1,6 +1,3 @@
-/Config/
-/Configs/
-/Configs/zk_keys.lua
-/Configs/zk_keys.lua.bak
-
-/src.lnk
+Configs/zk_keys.lua.bak
+Configs/
+Config/
