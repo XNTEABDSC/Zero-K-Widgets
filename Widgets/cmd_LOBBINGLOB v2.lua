@@ -230,7 +230,7 @@ function widget:GameFrame(n)
 			end
 			
 			if (n-LobInfo.lastCalled)<Game.gameSpeed*3 and (not atGround or not loaded) and dgunCMD~=nil then
-				spGiveOrderToUnit(LobInfo.id,CMD_REMOVE,{id,dgunCMD.tag},0)
+				spGiveOrderToUnit(LobInfo.id,CMD_REMOVE,{dgunCMD.tag},0)
 				--unitInfo.lastCalled=-1000
 			end
 		end
