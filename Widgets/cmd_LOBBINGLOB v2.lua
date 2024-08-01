@@ -72,6 +72,7 @@ local spGetPlayerInfo=Spring.GetPlayerInfo
 local spGetUnitDefID=Spring.GetUnitDefID
 local spValidUnitID=Spring.ValidUnitID
 local spIsUnitAllied=Spring.IsUnitAllied
+local spGetUnitTeam=Spring.GetUnitTeam
 
 
 local function CheckAndRegisterLob(unitID, unitDefID, unitTeam)
@@ -80,7 +81,7 @@ local function CheckAndRegisterLob(unitID, unitDefID, unitTeam)
 		WatchLobsUSID:add(unitID)
 		
 		local x,y,z=Spring.GetUnitPosition(unitID)
-		--Spring.MarkerAddPoint(x,y,z,"Lob Register")
+		Spring.MarkerAddPoint(x,y,z,"Lob Register")
 		
 	end
 end
@@ -100,7 +101,7 @@ local function CheckAndRegisterLikho(unitID,unitDefID,unitTeam)
 		WatchLikhosUSID:add(unitID)
 
 		local x,y,z=Spring.GetUnitPosition(unitID)
-		--Spring.MarkerAddPoint(x,y,z,"Likho Register")
+		Spring.MarkerAddPoint(x,y,z,"Likho Register")
 	end
 end
 
@@ -148,6 +149,15 @@ function widget:Initialize()
 	myTeamId=Spring.GetMyTeamID()
 	myPlayerId=Spring.GetMyPlayerID()
 	myAllyTeamId=Spring.GetMyAllyTeamID()
+
+	for key, UnitId in pairs(Spring.GetAllUnits()) do
+		local UnitDefId=spGetUnitDefID(UnitId)
+		local UnitTeam=spGetUnitTeam(UnitId)
+		if UnitDefId and UnitTeam and spGetUnitPosition(UnitId) then
+			CheckAndRegisterLob(UnitId,UnitDefId,UnitTeam)
+			CheckAndRegisterLikho(UnitId,UnitDefId,UnitTeam)
+		end
+	end
 end
 local JumpDistance=550
 local EscapeSpeed=45/Game.gameSpeed
