@@ -14,7 +14,7 @@ function widget:GetInfo()
 	}
 end
 
-function gmlog(str)
+function GMLog(str)
 	Spring.Echo("game_message: " .. str)
 end
 

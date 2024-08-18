@@ -67,4 +67,13 @@ if WG.WackyBag.utils==nil then
             insertOption
         );
     end
+
+    local GetOrDefMetatable={
+        __index=function (t,k)
+            return rawget(t,k) or rawget(t,"default")
+        end
+    }
+    function utils.SetGetOrDef(t)
+        setmetatable(t,GetOrDefMetatable)
+    end
 end

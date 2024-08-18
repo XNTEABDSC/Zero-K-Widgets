@@ -176,13 +176,20 @@ Game.mapSizeX=512
 Game.mapSizeZ=512
 
 
----@class WeaponDefId
+---@class WeaponDefId:integer
+---@class WeaponDefName:string
 ---@class WeaponDef:any --:{id:WeaponDefId,[any]:any}
 ---@field id WeaponDefId
+---@field name WeaponDefName
+---@field damageAreaOfEffect number
+---@field damages list<number>
+---@field flightTime number
 
----@type list<WeaponDef>
+---@type table<WeaponDefId,WeaponDef>
 WeaponDefs={}
 
+---@type table<WeaponDefName,WeaponDef>
+WeaponDefNames={}
 
 
 ---@class ProjectileId:number

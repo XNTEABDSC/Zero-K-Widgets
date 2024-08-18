@@ -10,6 +10,8 @@ function widget:GetInfo()
 	}
 end
 
+local getordef=WG.WackyBag.utils.SetGetOrDef
+
 ---@class WpnInfoAndProjs
 ---@field WDId WeaponDefId
 ---@field aoe number
@@ -54,10 +56,27 @@ local WatchWpnNames={
 local WatchWpnDrawPrevState={
 
 }
-local WatchWpnDrawTimedef=Game.gameSpeed*8
+--local WatchWpnDrawTimedef=
 local WatchWpnDrawTime={
-	
+	default=Game.gameSpeed*8
 }
+
+
+--local aoeColor             = {1, 0, 0, 0.75}
+
+local WatchWpnDrawColor={
+	default={1, 0, 0, 0.75}
+}
+
+getordef(WatchWpnDrawTime)
+getordef(WatchWpnDrawColor)
+
+do
+	local trackedMissiles = include("LuaRules/Configs/tracked_missiles.lua")
+	for wpnId, data in pairs(trackedMissiles) do
+		WatchWpnDrawColor[WeaponDefs[wpnId].name]=data.color
+	end
+end
 
 local wgGetProjectiles=WG.WackyBag.utils.get_proj.GetProjList
 
@@ -70,6 +89,7 @@ local spGetGroundHeight=Spring.GetGroundHeight
 local WDIdToWatchWpn={}
 
 
+
 local function GetWatchWeaponDefs()
 	local function SetWatchWeaponDef(wpnname)
 		local wd=WeaponDefNames[wpnname]
@@ -79,7 +99,7 @@ local function GetWatchWeaponDefs()
 			aoe=wd.damageAreaOfEffect,
 			lineWidth=math.log(wd.damages[0]+1,2)/4,
 			Projs={},
-			drawtime=(WatchWpnDrawTime[wpnname] or WatchWpnDrawTimedef)
+			drawtime=(WatchWpnDrawTime[wpnname])
 		}
 		WDIdToWatchWpn[wd.id]=innerId
 	end
@@ -179,7 +199,6 @@ local function GetMouseDistance()
 	return sqrt(dx*dx + dy*dy + dz*dz)
 end
 
-local aoeColor             = {1, 0, 0, 0.75}
 local circleDivs           = 64
 local PI=math.pi
 local cos                    = math.cos
@@ -246,14 +265,14 @@ local function DrawCircle(x, y, z, radius)
 end
 
 --- from gui_attack_aoe
-local function DrawAoe(tx,ty,tz,aoe,alpha2)
-	glLineWidth(math.max(0.05, aoeLineWidthMult * aoe / mouseDistance))
+local function DrawAoe(tx,ty,tz,aoe,alpha2,color,linewidth)
+	glLineWidth(math.max(0.05, linewidth))
 	
 	for i = 1, numAoECircles do
 		local proportion = i / (numAoECircles + 1)
 		local radius = aoe * proportion
-		local alpha = alpha2*aoeColor[4] * (1 - proportion)
-		glColor(aoeColor[1], aoeColor[2], aoeColor[3], alpha)
+		local alpha = alpha2*color[4] * (1 - proportion)
+		glColor(color[1], color[2], color[3], alpha)
 		DrawCircle(tx, ty, tz, radius)
 	end
 
@@ -298,7 +317,7 @@ local function EnumProjPath(proID,wpndef , drawtime)
 		local heightDef=GroundHeight-posy
 		if heightDef>0 then
 			local vlen=heightDef/vely
-			posx,posy,posz=posx-velx*vlen,posy-vely*vlen,posz-velz*vlen
+			posx,posy,posz=posx+velx*vlen,posy+vely*vlen,posz+velz*vlen
 			local tl=(timeCount-vlen)/initTimeCount
 			timeCount=-1
 			return posx,posy,posz,tl
@@ -385,21 +404,23 @@ end
 function widget:DrawWorld()
 	CheckProjs()
 	--CheckProjs()
-	mouseDistance= GetMouseDistance() or 1000
+	--mouseDistance= GetMouseDistance() or 1000
 	local AOEDraws={}
 
-	for _, WDInfo in pairs(WatchWpnAndProjs) do
+	for WDInnerId, WDInfo in pairs(WatchWpnAndProjs) do
+		local WDName=WatchWpnNames[WDInnerId]
 		local aoe=WDInfo.aoe
 		local lineWidth=WDInfo.lineWidth
 		local WDId=WDInfo.WDId
-		
+		local color=WatchWpnDrawColor[WDName]
+		local drawtime=WatchWpnDrawTime[WDName]--WDInfo.drawtime
         glLineWidth(lineWidth)
 		local landPos={}
 		for i, projid in pairs(WDInfo.Projs) do
 
 			function DrawPathLine()
 				
-				local enumf=EnumProjPath(projid,WDId,WDInfo.drawtime)
+				local enumf=EnumProjPath(projid,WDId,drawtime)
 
 				
 				local x,y,z,tl
@@ -409,11 +430,11 @@ function widget:DrawWorld()
 						break;
 					end
 					x,y,z,tl=x_,y_,z_,tl_
-					glColor(aoeColor[1],aoeColor[2],aoeColor[3],aoeColor[4]* tl )
+					glColor(color[1],color[2],color[3],color[4]* tl )
 					glVertex(x,y,z)
 				end
 				if tl and 0.1<tl then
-					AOEDraws[#AOEDraws+1] = {x,y,z,aoe,tl}
+					AOEDraws[#AOEDraws+1] = {x,y,z,aoe,tl,color,lineWidth}
 				end
 				
 				
@@ -441,10 +462,10 @@ function widget:DrawWorld()
 			glBeginEnd(GL_LINE_STRIP,DrawPathLine)
 			
 			function DrawPrevPathLine()
-				local enumf=EnumProjPrevPath(projid,WDId,WDInfo.drawtime)
+				local enumf=EnumProjPrevPath(projid,WDId,drawtime)
 				local x,y,z,tl=enumf()
 				while x~=nil do
-					glColor(aoeColor[1],aoeColor[2],aoeColor[3],aoeColor[4]* tl )
+					glColor(color[1],color[2],color[3],color[4]* tl )
 					glVertex(x,y,z)
 					x,y,z,tl=enumf()
 				end
@@ -455,7 +476,7 @@ function widget:DrawWorld()
 
 	for i = 1, #AOEDraws do
 		local t=AOEDraws[i]
-		DrawAoe(t[1],t[2],t[3],t[4],t[5])
+		DrawAoe(t[1],t[2],t[3],t[4],t[5],t[6],t[7])
 	end
 
 	--[==[
