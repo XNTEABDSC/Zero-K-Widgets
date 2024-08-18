@@ -94,7 +94,7 @@ local spGetProjectileDefID=Spring.GetProjectileDefID
 local function CheckProjs()
 	for _, WDInfo in pairs(WatchWpnAndProjs) do
 		local ProjList=WDInfo.Projs
-		local ProjIndex=1
+		local ProjIndex= 1
 		local ProjCount=#ProjList
 		while ProjIndex<ProjCount do
 			local ProjId=ProjList[ProjIndex]
