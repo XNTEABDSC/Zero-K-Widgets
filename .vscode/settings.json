@@ -15,5 +15,6 @@
         "duplicate-set-field"
     ],
     "lua.debug.settings.cpath": "",
-    "lua.debug.settings.path": "${workspaceFolder}/?.lua;${workspaceFolder}/?/init.lua; ./?.lua ; ./?/init.lua "
+    "lua.debug.settings.path": "${workspaceFolder}/?.lua;${workspaceFolder}/?/init.lua; ./?.lua ; ./?/init.lua ",
+    "Lua.runtime.version": "Lua 5.1"
 }

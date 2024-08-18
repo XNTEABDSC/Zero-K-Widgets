@@ -110,7 +110,7 @@ local movedHavens=WackyBag.collections.unordered_list.new()
 ---@type frame
 local havenIsSafeTime=5*Game.gameSpeed
 ---@type frame
-local havenMoveSafeTime=-5*Game.gameSpeed
+local havenMoveSafeTime=0*Game.gameSpeed
 
 function GetHavens()
     local teamID=spGetMyTeamID()

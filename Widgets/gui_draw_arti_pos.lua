@@ -14,6 +14,7 @@ end
 ---@field WDId WeaponDefId
 ---@field aoe number
 ---@field lineWidth number
+---@field drawtime number
 ---@field Projs list<ProjectileId>
 
 ---@type list<WpnInfoAndProjs>
@@ -49,6 +50,15 @@ local WatchWpnNames={
 	"vehheavyarty_cortruck_rocket"
 }
 
+
+local WatchWpnDrawPrevState={
+
+}
+local WatchWpnDrawTimedef=Game.gameSpeed*8
+local WatchWpnDrawTime={
+	
+}
+
 local wgGetProjectiles=WG.WackyBag.utils.get_proj.GetProjList
 
 local spGetProjectilePosition=Spring.GetProjectilePosition
@@ -61,18 +71,20 @@ local WDIdToWatchWpn={}
 
 
 local function GetWatchWeaponDefs()
-	local function SetWatchWeaponDef(wd)
+	local function SetWatchWeaponDef(wpnname)
+		local wd=WeaponDefNames[wpnname]
 		local innerId=#WatchWpnAndProjs+1
 		WatchWpnAndProjs[innerId]={
 			WDId=wd.id,
 			aoe=wd.damageAreaOfEffect,
-			lineWidth=math.log(wd.damages[0]+1,2),
-			Projs={}
+			lineWidth=math.log(wd.damages[0]+1,2)/4,
+			Projs={},
+			drawtime=(WatchWpnDrawTime[wpnname] or WatchWpnDrawTimedef)
 		}
 		WDIdToWatchWpn[wd.id]=innerId
 	end
-	for key, value in pairs(WatchWpnNames) do
-		SetWatchWeaponDef(WeaponDefNames[value])
+	for key, wpnname in pairs(WatchWpnNames) do
+		SetWatchWeaponDef(wpnname)
 	end
 end
 
@@ -256,8 +268,8 @@ end
 ---comment
 ---@param proID ProjectileId
 ---@return fun():( WldxPos|nil,WldyPos|nil,WldzPos|nil,number|nil )
-local function EnumProjPath(proID,wpndef)
-	local initTimeCount=Game.gameSpeed*8
+local function EnumProjPath(proID,wpndef , drawtime)
+	local initTimeCount=drawtime--Game.gameSpeed*8
 	local timeCount=initTimeCount
 	local posx,posy,posz=spGetProjectilePosition(proID)
 	--[[
@@ -280,6 +292,9 @@ local function EnumProjPath(proID,wpndef)
 			return nil
 		end
 		local GroundHeight=spGetGroundHeight(posx,posz)
+		if GroundHeight<0 then
+			GroundHeight=0
+		end
 		local heightDef=GroundHeight-posy
 		if heightDef>0 then
 			local vlen=heightDef/vely
@@ -331,8 +346,8 @@ end
 ---comment
 ---@param proID ProjectileId
 ---@return fun():( WldxPos|nil,WldyPos|nil,WldzPos|nil,number|nil )
-local function EnumProjPrevPath(proID,wpndef)
-	local initTimeCount=Game.gameSpeed*8
+local function EnumProjPrevPath(proID,wpndef, drawtime)
+	local initTimeCount=drawtime --
 	local timeCount=initTimeCount
 	local posx,posy,posz=spGetProjectilePosition(proID)
 	--[[
@@ -357,7 +372,7 @@ local function EnumProjPrevPath(proID,wpndef)
 		if 0>=timeCount then
 			return nil
 		end
-		if spGetGroundHeight(posx,posz)>posy then
+		if spGetGroundHeight(posx,posz)>posy or 0>posy then
 			return nil
 		end
 		local oldposx,oldposy,oldposz=posx,posy,posz
@@ -384,7 +399,7 @@ function widget:DrawWorld()
 
 			function DrawPathLine()
 				
-				local enumf=EnumProjPath(projid,WDId)
+				local enumf=EnumProjPath(projid,WDId,WDInfo.drawtime)
 
 				
 				local x,y,z,tl
@@ -426,7 +441,7 @@ function widget:DrawWorld()
 			glBeginEnd(GL_LINE_STRIP,DrawPathLine)
 			
 			function DrawPrevPathLine()
-				local enumf=EnumProjPrevPath(projid,WDId)
+				local enumf=EnumProjPrevPath(projid,WDId,WDInfo.drawtime)
 				local x,y,z,tl=enumf()
 				while x~=nil do
 					glColor(aoeColor[1],aoeColor[2],aoeColor[3],aoeColor[4]* tl )

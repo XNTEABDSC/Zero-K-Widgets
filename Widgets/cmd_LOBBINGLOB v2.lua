@@ -62,6 +62,8 @@ local LikhoRange=WeaponDefs[UnitDefNames["bomberheavy"].weapons[1].weaponDef].ra
 local LikhoSpeed=UnitDefNames["bomberheavy"].speed / Game.gameSpeed
 --Spring.Echo("LikhoValues: range: ".. LikhoRange .. ", speed: " .. LikhoSpeed)
 
+local lobbingRange=UnitDefNames["amphlaunch"].customParams.thrower_gather
+
 
 local wbGetProjectiles=WackyBag.utils.get_proj.GetProjList
 local spGetProjectileDefID=Spring.GetProjectileDefID
@@ -161,7 +163,7 @@ function widget:Initialize()
 end
 local JumpDistance=550
 local EscapeSpeed=45/Game.gameSpeed
-local extraDelay=6
+local extraDelay=8
 
 local wbInsertOrderToUnit=WackyBag.utils.InsertOrderToUnit
 local spGetGroundHeight=Spring.GetGroundHeight
@@ -169,6 +171,8 @@ local spGiveOrderToUnit=Spring.GiveOrderToUnit
 local spGetProjectileTeamID=Spring.GetProjectileTeamID
 local spGetUnitCommands=Spring.GetUnitCommands
 
+local spGetUnitIsCloaked=Spring.GetUnitIsCloaked
+local spGetUnitsInCylinder=Spring.GetUnitsInCylinder
 --local name,active,spec,teamID,allyTeamID,pingTime,cpuUsage, country, rank = Spring_GetPlayerInfo(p, false)
 function widget:GameFrame(n)
 	local projs={}
@@ -205,11 +209,26 @@ function widget:GameFrame(n)
 		if lobx then
 			local _, loaded=spGetUnitWeaponState(LobInfo.id,1)
 			local cmdQueue=spGetUnitCommands(LobInfo.id,1)
-			
+
 			local atGround=(loby-spGetGroundHeight(lobx,lobz))<1
 
+			
+			local cloakedCheck=spGetUnitIsCloaked(LobInfo.id)
+
+			if cloakedCheck then
+				for _,CircleUnitId in pairs(spGetUnitsInCylinder(lobx,lobz,lobbingRange,myTeamId)) do
+					--Spring.Echo(type(CircleUnitId) .. " : " .. tostring(CircleUnitId))
+					if not spGetUnitIsCloaked(CircleUnitId) then
+						cloakedCheck=false
+						break
+					end
+				end
+			end
+
 			local dgunCMD=(cmdQueue and cmdQueue[1] and cmdQueue[1].id == CMD_DGUN and cmdQueue[1]) or nil
-			if (n-LobInfo.lastCalled)>Game.gameSpeed and loaded and atGround and dgunCMD==nil then
+			if (n-LobInfo.lastCalled)>Game.gameSpeed and not cloakedCheck and loaded and atGround and dgunCMD==nil then
+			
+				local lobvx,lobvy,lobvz=spGetUnitVelocity(LobInfo.id)
 
 				for likhoInfo, _ in WatchLikhos:enum() do
 					local likhox,likhoy,likhoz=spGetUnitPosition(likhoInfo.id)
@@ -226,8 +245,10 @@ function widget:GameFrame(n)
 					local offsetNormX,offsetNormZ=offsetx/distance,offsetz/distance
 
 					local LikhoSpeedOnOffset=offsetNormX*likhovx+offsetNormZ*likhovz
+					local LobSpeedOnOffset=offsetNormX*lobvx+offsetNormZ*lobvz
 
-					if distance+(-LikhoSpeedOnOffset+EscapeSpeed)*(delayFrame-extraDelay) < LikhoRange then
+
+					if distance+(-LikhoSpeedOnOffset+LobSpeedOnOffset)*(delayFrame-extraDelay) < LikhoRange then
 						--spGiveOrderToUnit(unitId.id,CMD_DGUN,{jumpX+unitx,jumpY,jumpZ+unitz},0)
 						
 						local jumpX,jumpZ=offsetNormX*JumpDistance,offsetNormZ*JumpDistance
