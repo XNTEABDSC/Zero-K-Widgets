@@ -109,7 +109,7 @@ local function replevalstr(opstr)
 		return false
 	end
 	local result,reslen=dostring("return ".. opstr .. "")
-	if reslen and reslen>=1 then
+	if result and reslen and reslen>=1 then
 		ANS=result[1]
 		Spring.Echo("game_message: " .. list2str(result,", ",1,reslen))
 	end

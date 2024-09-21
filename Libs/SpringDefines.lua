@@ -64,8 +64,8 @@ Spring={}
 ]=]
 
 --- show message to console. `"game_message: ".. msg` to show `msg` at chat (client only)
----@param msg string message to be shown
-function Spring.Echo(msg)end
+---@param ... any message to be shown
+function Spring.Echo(...)end
 
 
 ---@param UnitId UnitId

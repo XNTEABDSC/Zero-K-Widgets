@@ -16,12 +16,12 @@ local getordef=WG.WackyBag.utils.SetGetOrDef
 ---@field WDId WeaponDefId
 ---@field aoe number
 ---@field lineWidth number
----@field drawtime number
+-- ---@field drawtime number
 ---@field Projs list<ProjectileId>
 
 ---@type list<WpnInfoAndProjs>
-local WatchWpnAndProjs={}
-
+local WatchWpnAndProjs={
+}
 local WatchWpnNames={
 	"bomberheavy_arm_pidr",
 	"chicken_blimpy_dodobomb",
@@ -51,12 +51,9 @@ local WatchWpnNames={
 	"veharty_mine",
 	"vehheavyarty_cortruck_rocket"
 }
-
-
 local WatchWpnDrawPrevState={
 
 }
---local WatchWpnDrawTimedef=
 local WatchWpnDrawTime={
 	default=Game.gameSpeed*8
 }
@@ -76,6 +73,10 @@ do
 	for wpnId, data in pairs(trackedMissiles) do
 		WatchWpnDrawColor[WeaponDefs[wpnId].name]=data.color
 	end
+	WatchWpnDrawColor["raveparty_blue_shocker"]=WatchWpnDrawColor["empmissile_emp_weapon"]
+	WatchWpnDrawColor["raveparty_orange_roaster"]=WatchWpnDrawColor["napalmmissile_weapon"]
+	WatchWpnDrawColor["raveparty_violet_slugger"]=WatchWpnDrawColor["missileslow_weapon"]
+	WatchWpnDrawColor["raveparty_green_stamper"]=WatchWpnDrawColor["seismic_seismic_weapon"]
 end
 
 local wgGetProjectiles=WG.WackyBag.utils.get_proj.GetProjList
@@ -97,9 +98,9 @@ local function GetWatchWeaponDefs()
 		WatchWpnAndProjs[innerId]={
 			WDId=wd.id,
 			aoe=wd.damageAreaOfEffect,
-			lineWidth=math.log(wd.damages[0]+1,2)/4,
+			lineWidth=math.log(wd.damages[0]+1)/3,
 			Projs={},
-			drawtime=(WatchWpnDrawTime[wpnname])
+			--drawtime=(WatchWpnDrawTime[wpnname])
 		}
 		WDIdToWatchWpn[wd.id]=innerId
 	end
@@ -266,7 +267,7 @@ end
 
 --- from gui_attack_aoe
 local function DrawAoe(tx,ty,tz,aoe,alpha2,color,linewidth)
-	glLineWidth(math.max(0.05, linewidth))
+	glLineWidth(math.max(0.05, linewidth* aoe / mouseDistance))
 	
 	for i = 1, numAoECircles do
 		local proportion = i / (numAoECircles + 1)
@@ -284,7 +285,6 @@ end
 ---@type {[ProjectileId]:{proOwnerID:UnitId,weaponDefID:WeaponDefId}}
 
 
----comment
 ---@param proID ProjectileId
 ---@return fun():( WldxPos|nil,WldyPos|nil,WldzPos|nil,number|nil )
 local function EnumProjPath(proID,wpndef , drawtime)
@@ -328,39 +328,6 @@ local function EnumProjPath(proID,wpndef , drawtime)
 		return oldposx,oldposy,oldposz,timeCount/initTimeCount
 	end
 end
---[====[
----@param proID ProjectileId
----@param wpndef WeaponDefId
----@param fn fun(x:number,y:number,z:number,tl:number)
----@return number
----@return number
----@return number
----@return number
-local function EnumProjPathF(proID,wpndef,fn)
-	local initTimeCount=Game.gameSpeed*8
-	local timeCount=initTimeCount
-	local posx,posy,posz=spGetProjectilePosition(proID)
-	local velx,vely,velz=spGetProjectileVelocity(proID)
-	local grav= spGetProjectileGravity( proID )
-	if 1<WeaponDefs[wpndef].flightTime then
-		grav=0
-	end
-
-	while 0>=timeCount and spGetGroundHeight(posx,posz)>posy do
-		timeCount=timeCount-1
-		if 0>=timeCount then
-			return nil
-		end
-		if spGetGroundHeight(posx,posz)>posy then
-			return nil
-		end
-		local oldposx,oldposy,oldposz=posx,posy,posz
-		vely=vely+grav
-		posx,posy,posz=posx+velx,posy+vely,posz+velz
-		return oldposx,oldposy,oldposz,timeCount/initTimeCount
-	end
-end
-]====]
 
 ---comment
 ---@param proID ProjectileId
@@ -404,7 +371,7 @@ end
 function widget:DrawWorld()
 	CheckProjs()
 	--CheckProjs()
-	--mouseDistance= GetMouseDistance() or 1000
+	mouseDistance= GetMouseDistance() or 1000
 	local AOEDraws={}
 
 	for WDInnerId, WDInfo in pairs(WatchWpnAndProjs) do
@@ -434,30 +401,9 @@ function widget:DrawWorld()
 					glVertex(x,y,z)
 				end
 				if tl and 0.1<tl then
-					AOEDraws[#AOEDraws+1] = {x,y,z,aoe,tl,color,lineWidth}
+					AOEDraws[#AOEDraws+1] = {x,y,z,aoe,tl,color,lineWidth*16*2}
 				end
 				
-				
-				
-
-
-
-				--[[
-				for x,y,z,tl in enumf() do
-					glColor(aoeColor[1],aoeColor[2],aoeColor[3],aoeColor[4]* tl )
-					glVertex(x,y,z)
-				end
-				]]
-				--[[
-				local oldx,oldy,oldz,oldtl=enumf()
-				for x,y,z,tl in enumf do
-					glColor(aoeColor[1],aoeColor[2],aoeColor[3],aoeColor[4]* oldtl )
-					glVertex(oldx,oldy,oldz)
-					--EZDrawer.DrawerTemplates.DrawLine(oldx,oldy,oldz,x,y,z,{},WatchWpnInfo[WDId].lineWidth*scatterLineWidthMult/mouseDistance)
-					oldx,oldy,oldz,oldtl=x,y,z,tl
-				end
-				glVertex(oldx,oldy,oldz)
-				]]
 			end
 			glBeginEnd(GL_LINE_STRIP,DrawPathLine)
 			
@@ -479,56 +425,21 @@ function widget:DrawWorld()
 		DrawAoe(t[1],t[2],t[3],t[4],t[5],t[6],t[7])
 	end
 
-	--[==[
-	for _, projid in pairs(WatchProjs) do
-		local WDId=spGetProjectileDefID(projid)
-		if WatchWpnInfo[WDId] then
-			do
-				local enumf=EnumProjPath(projid,WDId)
-				local oldx,oldy,oldz,oldtl=enumf()
-				for x,y,z,tl in enumf do
-					EZDrawer.DrawerTemplates.DrawLine(oldx,oldy,oldz,x,y,z,{aoeColor[1],aoeColor[2],aoeColor[3],aoeColor[4]* tl },WatchWpnInfo[WDId].lineWidth*scatterLineWidthMult/mouseDistance)
-					oldx,oldy,oldz,oldtl=x,y,z,tl
-				end
-				if oldtl and 0.1<oldtl and WatchWpnInfo[WDId] then -- hit ground
-					DrawAoe(oldx,oldy,oldz,WatchWpnInfo[WDId].aoe,oldtl)
-				end
-			end
-			
-			do
-				local enumPrev=EnumProjPrevPath(projid,WDId)
-				local oldx,oldy,oldz,oldtl=enumPrev()
-				for x,y,z,tl in enumPrev do
-					EZDrawer.DrawerTemplates.DrawLine(oldx,oldy,oldz,x,y,z,{aoeColor[1],aoeColor[2],aoeColor[3],aoeColor[4]* tl },WatchWpnInfo[WDId].lineWidth*scatterLineWidthMult/mouseDistance)
-					oldx,oldy,oldz,oldtl=x,y,z,tl
-				end
-			end
-
-
-
-		end
-			
-	end
-	]==]
 end
 
 function widget:Initialize()
 	GetWatchWeaponDefs()
 	SetupDisplayLists()
 
-	--widgetHandler:RegisterGlobal(widget, "lupsProjectiles_AddProjectile", MyProjectileCreated) --proID, proOwnerID, weaponID
-	--widgetHandler:RegisterGlobal(widget, "lupsProjectiles_RemoveProjectile", MyProjectileDestroyed)
 end
 
 function widget:Shutdown()
 	DeleteDisplayLists()
-	--widgetHandler:DeregisterGlobal(widget, "lupsProjectiles_AddProjectile", MyProjectileCreated) --proID, proOwnerID, weaponID
-	--widgetHandler:DeregisterGlobal(widget, "lupsProjectiles_RemoveProjectile", MyProjectileDestroyed)
 end
 
 local setted=false
 function widget:GameFrame(n)
-	if n%5==0 then
+	if n%3==0 then
 		UpdateProjs()
 	else
 		--CheckProjs()
