@@ -16,8 +16,10 @@ local getordef=WG.WackyBag.utils.SetGetOrDef
 ---@field WDId WeaponDefId
 ---@field aoe number
 ---@field lineWidth number
--- ---@field drawtime number
+---@field isnotparabola boolean
+---@field name string
 ---@field Projs list<ProjectileId>
+---@field edgeEffectiveness number
 
 ---@type list<WpnInfoAndProjs>
 local WatchWpnAndProjs={
@@ -97,9 +99,12 @@ local function GetWatchWeaponDefs()
 		local innerId=#WatchWpnAndProjs+1
 		WatchWpnAndProjs[innerId]={
 			WDId=wd.id,
-			aoe=wd.damageAreaOfEffect,
-			lineWidth=math.log(wd.damages[0]+1)/3,
+			aoe=(wd.damageAreaOfEffect>8 and wd.damageAreaOfEffect) or tonumber(wd.customParams.area_damage_radius) or 0,
+			lineWidth=math.log(wd.damages[0]+1)/2,
 			Projs={},
+			isnotparabola=(wd.flightTime~=nil and wd.flightTime>0),
+			name=wpnname,
+			edgeEffectiveness=wd.edgeEffectiveness,
 			--drawtime=(WatchWpnDrawTime[wpnname])
 		}
 		WDIdToWatchWpn[wd.id]=innerId
@@ -161,7 +166,7 @@ local spGetProjectileVelocity     = Spring.GetProjectileVelocity
 local spGetProjectileType         = Spring.GetProjectileType
 ]]
 local aoeLineWidthMult     = 64
-local numAoECircles=9
+local numAoECircles=10
 local mouseDistance = 1000
 
 local spGetCameraPosition=Spring.GetCameraPosition
@@ -282,6 +287,22 @@ local function DrawAoe(tx,ty,tz,aoe,alpha2,color,linewidth)
 end
 
 
+local function DrawAoE(tx, ty, tz, aoe,aoeColor,alphaMult, edgeEffectiveness,linewidth)
+	glLineWidth(linewidth)
+	--glLineWidth(math.max(0.05, linewidth * aoe / mouseDistance*64))
+	
+	for i = 1, numAoECircles-1 do
+		local proportion = i / (numAoECircles)
+		local radius = aoe * proportion
+		local alphaMultByCircle=(1 - proportion) / (1 - proportion * edgeEffectiveness)
+		local alpha = aoeColor[4] * alphaMultByCircle  * alphaMult
+		glColor(aoeColor[1], aoeColor[2], aoeColor[3], alpha)
+		DrawCircle(tx, ty, tz, radius)
+	end
+
+end
+
+
 ---@type {[ProjectileId]:{proOwnerID:UnitId,weaponDefID:WeaponDefId}}
 
 
@@ -301,9 +322,6 @@ local function EnumProjPath(proID,wpndef , drawtime)
 	end]]
 	local velx,vely,velz=spGetProjectileVelocity(proID)
 	local grav= spGetProjectileGravity( proID )
-	if 1<WeaponDefs[wpndef].flightTime then
-		grav=0
-	end
 
 	return function ()
 		timeCount=timeCount-1
@@ -347,11 +365,6 @@ local function EnumProjPrevPath(proID,wpndef, drawtime)
 	local velx,vely,velz=spGetProjectileVelocity(proID)
 	velx,vely,velz=-velx,-vely,-velz
 	local grav= spGetProjectileGravity( proID )
-	if 1<WeaponDefs[wpndef].flightTime then
-		return function ()
-			return nil
-		end
-	end
 
 	return function ()
 		timeCount=timeCount-1
@@ -368,6 +381,41 @@ local function EnumProjPrevPath(proID,wpndef, drawtime)
 	end
 end
 
+---@param proID ProjectileId
+---@return fun():( WldxPos|nil,WldyPos|nil,WldzPos|nil,number|nil )
+local function EnumProjPathStraight(proID,wpndef , drawtime)
+	local initTimeCount=drawtime--Game.gameSpeed*8
+	local timeCount=initTimeCount
+	local posx,posy,posz=spGetProjectilePosition(proID)
+	local velx,vely,velz=spGetProjectileVelocity(proID)
+	if (vely/math.sqrt(velx*velx+velz*velz))>-0.1  then
+		return function ()
+			return nil
+		end
+	end
+	return function ()
+		timeCount=timeCount-1
+		if 0>=timeCount then
+			return nil
+		end
+		local GroundHeight=spGetGroundHeight(posx,posz)
+		if GroundHeight<0 then
+			GroundHeight=0
+		end
+		local heightDef=GroundHeight-posy
+		if heightDef>0 then
+			local vlen=heightDef/vely
+			posx,posy,posz=posx+velx*vlen,posy+vely*vlen,posz+velz*vlen
+			local tl=(timeCount-vlen)/initTimeCount
+			timeCount=-1
+			return posx,posy,posz,tl
+		end
+		local oldposx,oldposy,oldposz=posx,posy,posz
+		posx,posy,posz=posx+velx,posy+vely,posz+velz
+		return oldposx,oldposy,oldposz,timeCount/initTimeCount
+	end
+end
+
 function widget:DrawWorld()
 	CheckProjs()
 	--CheckProjs()
@@ -375,7 +423,7 @@ function widget:DrawWorld()
 	local AOEDraws={}
 
 	for WDInnerId, WDInfo in pairs(WatchWpnAndProjs) do
-		local WDName=WatchWpnNames[WDInnerId]
+		local WDName=WDInfo.name
 		local aoe=WDInfo.aoe
 		local lineWidth=WDInfo.lineWidth
 		local WDId=WDInfo.WDId
@@ -383,46 +431,73 @@ function widget:DrawWorld()
 		local drawtime=WatchWpnDrawTime[WDName]--WDInfo.drawtime
         glLineWidth(lineWidth)
 		local landPos={}
-		for i, projid in pairs(WDInfo.Projs) do
-
-			function DrawPathLine()
-				
-				local enumf=EnumProjPath(projid,WDId,drawtime)
-
-				
-				local x,y,z,tl
-				while true do
-					local x_,y_,z_,tl_=enumf()
-					if(x_==nil) then
-						break;
+		local ee=WDInfo.edgeEffectiveness
+		if WDInfo.isnotparabola then
+			for i, projid in pairs(WDInfo.Projs) do
+				function DrawPathLine()
+					local enumf=EnumProjPathStraight(projid,WDId,drawtime)
+					local x,y,z,tl
+					while true do
+						local x_,y_,z_,tl_=enumf()
+						if(x_==nil) then
+							break;
+						end
+						x,y,z,tl=x_,y_,z_,tl_
+						glColor(color[1],color[2],color[3],color[4]* tl )
+						glVertex(x,y,z)
 					end
-					x,y,z,tl=x_,y_,z_,tl_
-					glColor(color[1],color[2],color[3],color[4]* tl )
-					glVertex(x,y,z)
+					if tl and 0.1<tl then
+						--
+						--glBeginEnd(GL_LINE_STRIP,DrawAoE,x,y,z,aoe,color,tl,ee,lineWidth)
+						AOEDraws[#AOEDraws+1] = function ()
+							DrawAoE(x,y,z,aoe,color,tl,ee,lineWidth)
+						end
+					end
+					
 				end
-				if tl and 0.1<tl then
-					AOEDraws[#AOEDraws+1] = {x,y,z,aoe,tl,color,lineWidth*16*2}
-				end
-				
+				glBeginEnd(GL_LINE_STRIP,DrawPathLine)
 			end
-			glBeginEnd(GL_LINE_STRIP,DrawPathLine)
-			
-			function DrawPrevPathLine()
-				local enumf=EnumProjPrevPath(projid,WDId,drawtime)
-				local x,y,z,tl=enumf()
-				while x~=nil do
-					glColor(color[1],color[2],color[3],color[4]* tl )
-					glVertex(x,y,z)
-					x,y,z,tl=enumf()
+		else
+			for i, projid in pairs(WDInfo.Projs) do
+				function DrawPathLine()
+					local enumf=EnumProjPath(projid,WDId,drawtime)
+					local x,y,z,tl
+					while true do
+						local x_,y_,z_,tl_=enumf()
+						if(x_==nil) then
+							break;
+						end
+						x,y,z,tl=x_,y_,z_,tl_
+						glColor(color[1],color[2],color[3],color[4]* tl )
+						glVertex(x,y,z)
+					end
+					if tl and 0.1<tl then
+						--glBeginEnd(GL_LINE_STRIP,DrawAoE,x,y,z,aoe,color,tl,ee,lineWidth)
+						--DrawAoE(x,y,z,aoe,color,tl,ee,lineWidth)
+						AOEDraws[#AOEDraws+1] = function ()
+							DrawAoE(x,y,z,aoe,color,tl,ee,lineWidth)
+						end
+					end
 				end
+				glBeginEnd(GL_LINE_STRIP,DrawPathLine)
+				function DrawPrevPathLine()
+					local enumf=EnumProjPrevPath(projid,WDId,drawtime)
+					local x,y,z,tl=enumf()
+					while x~=nil do
+						glColor(color[1],color[2],color[3],color[4]* tl )
+						glVertex(x,y,z)
+						x,y,z,tl=enumf()
+					end
+				end
+				glBeginEnd(GL_LINE_STRIP,DrawPrevPathLine)
 			end
-			glBeginEnd(GL_LINE_STRIP,DrawPrevPathLine)
 		end
+		
 	end
-
 	for i = 1, #AOEDraws do
 		local t=AOEDraws[i]
-		DrawAoe(t[1],t[2],t[3],t[4],t[5],t[6],t[7])
+		t()
+		--glBeginEnd(GL_LINE_STRIP,t)
 	end
 
 end

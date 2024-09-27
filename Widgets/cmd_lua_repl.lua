@@ -8,7 +8,7 @@ function widget:GetInfo()
 		desc      = "do lua in chat",
 		author    = "XNT",
 		date      = "date",
-		license   = "zzz",
+		license   = "MIT",
 		layer     = 0,
 		enabled   = false,
 	}
