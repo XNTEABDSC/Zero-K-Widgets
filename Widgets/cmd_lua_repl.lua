@@ -211,7 +211,22 @@ local function chunkDo()
 	return true
 end
 
+local function replechohelp()
+	Spring.Echo("game_message: " .. [=[
+	.do  @ : run string
+	.eval > : eval
+	.cadd |> | : add string 
+	.cdel |- : delete line
+	.ctype : print code
+	.cclr : clear code chunk
+	.cgoto -> goto chunk line
+	.cdo : run code chunk
+	]=])
+end
+
 replstate.cmdChain={
+	
+	MatchStrAndDo("^%.help",replechohelp),
 	MatchStrAndDo("^%.do (.*)",repldotring),
 	MatchStrAndDo("^@(.*)",repldotring),
 	MatchStrAndDo("^%.eval (.*)",replevalstr),

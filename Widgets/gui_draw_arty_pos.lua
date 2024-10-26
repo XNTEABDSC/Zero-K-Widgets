@@ -1,6 +1,6 @@
 function widget:GetInfo()
 	return {
-		name      = "arti drawer",
+		name      = "arty drawer",
 		desc      = "draw artillery projectile path",
 		author    = "XNT",
 		date      = "date",
@@ -64,7 +64,7 @@ local WatchWpnDrawTime={
 --local aoeColor             = {1, 0, 0, 0.75}
 
 local WatchWpnDrawColor={
-	default={1, 0, 0, 0.75}
+	default={1, 0, 0, 0.5}
 }
 
 getordef(WatchWpnDrawTime)
@@ -91,26 +91,46 @@ local spGetGroundHeight=Spring.GetGroundHeight
 
 local WDIdToWatchWpn={}
 
+local function SetWatchWeaponDef(wd)
+	local innerId=#WatchWpnAndProjs+1
+	WatchWpnAndProjs[innerId]={
+		WDId=wd.id,
+		aoe=(wd.damageAreaOfEffect>8 and wd.damageAreaOfEffect) or tonumber(wd.customParams.area_damage_radius) or 0,
+		lineWidth=2,--math.log(wd.damages[0]+1)/2,
+		Projs={},
+		isnotparabola=(wd.flightTime~=nil and wd.flightTime>0),
+		name=wd.name,
+		edgeEffectiveness=wd.edgeEffectiveness,
+		--drawtime=(WatchWpnDrawTime[wpnname])
+	}
+	WDIdToWatchWpn[wd.id]=innerId
+end
 
 
 local function GetWatchWeaponDefs()
+	--[===[
 	local function SetWatchWeaponDef(wpnname)
 		local wd=WeaponDefNames[wpnname]
-		local innerId=#WatchWpnAndProjs+1
-		WatchWpnAndProjs[innerId]={
-			WDId=wd.id,
-			aoe=(wd.damageAreaOfEffect>8 and wd.damageAreaOfEffect) or tonumber(wd.customParams.area_damage_radius) or 0,
-			lineWidth=math.log(wd.damages[0]+1)/2,
-			Projs={},
-			isnotparabola=(wd.flightTime~=nil and wd.flightTime>0),
-			name=wpnname,
-			edgeEffectiveness=wd.edgeEffectiveness,
-			--drawtime=(WatchWpnDrawTime[wpnname])
-		}
-		WDIdToWatchWpn[wd.id]=innerId
+		SetWatchWeaponDef(wd)
 	end
 	for key, wpnname in pairs(WatchWpnNames) do
 		SetWatchWeaponDef(wpnname)
+	end]===]
+	for wdid, wd in pairs(WeaponDefs) do
+		--Spring.Utilities.TableEcho(wd.damages,wd.name .. ".damage")
+		if  wd.damages[1]>1 and
+			(wd.range and wd.range>740) and
+			not (wd.beamTime and wd.beamTime>1) and
+			not ((wd.customParams or wd.customparams or {}).isaa) and
+			not (wd.wobble and wd.wobble>0) and
+			not wd.tracks and
+			--(wd.weaponVelocity and wd.weaponVelocity<500 or false) and
+			--(wd.startVelocity or wd.weaponVelocity) and
+			--wd.range/(wd.startVelocity or wd.weaponVelocity)>1.5 and
+			true then
+			Spring.Echo("select weapon " .. wd.name)
+			SetWatchWeaponDef(wd)
+		end
 	end
 end
 
@@ -213,7 +233,7 @@ local circleList
 local scatterLineWidthMult=1024
 
 VFS.Include("LuaUI/Libs/WackyBagToWG.lua")
-local PrintTable=WG.WackyBag.utils.PrintTable
+local PrintTable=Spring.Utilities.TableEcho--WG.WackyBag.utils.PrintTable
 
 VFS.Include("LuaUI/Libs/EZDrawer.lua")
 local EZDrawer=WG.EZDrawer
