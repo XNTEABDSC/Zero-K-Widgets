@@ -1,7 +1,7 @@
 function widget:GetInfo()
 	return {
-		name      = "Auto Move Haven",
-		desc      = "automatically move retreat zone to safe place\n",
+		name      = "Auto Hide Haven",
+		desc      = "automatically hide retreat zone which is in danger place\n",
 		author    = "XNT",
 		date      = "date",
 		license   = "",
@@ -105,8 +105,8 @@ local teamHavens=WackyBag.collections.unordered_list.new() --{count = 0, items =
 
 
 --- movedHavens[id]=[(from):[x,z],(to):[gx,gz]]
----@type unordered_list<[ [WldxPos,WldzPos],([gridX,gridZ]|nil) ]>
-local movedHavens=WackyBag.collections.unordered_list.new()
+---@type unordered_list<[WldxPos,WldzPos]>
+local hidedHavens=WackyBag.collections.unordered_list.new()
 ---@type Frame
 local havenIsSafeTime=5*Game.gameSpeed
 ---@type Frame
@@ -165,65 +165,47 @@ local function PosHaveHaven(x,z,ignorehaven)
     return nil
 end
 
+---@return integer|nil
+local function PosHaveHideHaven(x,z,ignorehaven)
+    ignorehaven=ignorehaven or -1
+    for enumhavenId = 1, hidedHavens.count do
+        if(enumhavenId~=ignorehaven)  then
+            local dx,dz=hidedHavens[enumhavenId][1]-x,hidedHavens[enumhavenId][2]-z
+            if (dx*dx+dz*dz)<RADSQ then
+                return enumhavenId
+            end
+        end
+    end
+    return nil
+end
+
 function widget:GameFrame(n)
     if(n % updateTime==0) then
         GetHavens()
-        local changed=false
         editing=true
         for havenId = 1, teamHavens.count do
             local px,pz=teamHavens[havenId].x,teamHavens[havenId].z
             --spMarkerAddPoint(px,0,pz,"haven" .. havenId)
             local gx,gz=SafeZone.PosToGrid(px,pz)
             if(SafeZone.SafeZoneGrid[gx][gz].DangerTime-SafeZone.GameTime>havenIsSafeTime)then
-                local newgx,newgz=SafeZone.FindClosestSafeZone(gx,gz,havenMoveSafeTime)
-                if newgz==nil or newgx==nil then
-                    movedHavens:add({{px,pz},nil})
-                else
-                    local py=spGetGroundHeight(px,pz)
-                    spSendLuaRulesMsg('sethaven|' .. px .. '|' .. py .. '|' .. pz )
-                    local newx,newz=SafeZone.GridPosToCenter(newgx,newgz)
-                    local duplicateHaven= PosHaveHaven(newx,newz,havenId)~=nil
-                    
-
-                    local newy=spGetGroundHeight(newx,newz)
-                    movedHavens:add({{px,pz},{newgx,newgz}})
-                    EZDrawer.DrawerTemplates.EZDrawTimedVec(px,py,pz,newx,newy,newz,{0,1,0,0.5},16,0.2,Game.gameSpeed*5)
-                    
-                    if not duplicateHaven then
-                        spSendLuaRulesMsg('sethaven|' .. newx .. '|' .. newy .. '|' .. newz )
-                        teamHavens[havenId].x,teamHavens[havenId].z=newx,newz
-                    else
-                        teamHavens:remove(havenId)
-                        havenId=havenId-1
-                    end
-                    changed=true
+                if not PosHaveHideHaven(px,pz) then
+                    hidedHavens:add({px,pz})
                 end
+                local py=spGetGroundHeight(px,pz)
+                spSendLuaRulesMsg('sethaven|' .. px .. '|' .. py .. '|' .. pz )
             end
         end
-        if(changed) then
-            GetHavens()
-        end
+        GetHavens()
 
-        for movedHavenId = 1, movedHavens.count do
-            local tarpx,tarpz=movedHavens[movedHavenId][1][1],movedHavens[movedHavenId][1][2]
+        for movedHavenId = 1, hidedHavens.count do
+            local tarpx,tarpz=hidedHavens[movedHavenId][1],hidedHavens[movedHavenId][2]
             local targx,targz=SafeZone.PosToGrid(tarpx,tarpz)
-            local tarpy=spGetGroundHeight(tarpx,tarpz)
             if(SafeZone.ValidGridPos(targx,targz) and SafeZone.SafeZoneGrid[targx][targz].DangerTime-SafeZone.GameTime<havenMoveSafeTime) then
-                if(movedHavens[movedHavenId][2]~= nil) then
-                    local fromgx,fromgz=movedHavens[movedHavenId][2][1],movedHavens[movedHavenId][2][2]
-                    local frompx,frompz=SafeZone.GridPosToCenter(fromgx,fromgz)
-                    local frompy=spGetGroundHeight(frompx,frompz)
-                    local fromHaven=PosHaveHaven(frompx,frompz,-1)
-                    if fromHaven~=nil then
-                        -- spMarkerAddPoint(frompx,frompy,frompz,"removed")
-                        spSendLuaRulesMsg('sethaven|' .. frompx .. '|' .. frompy .. '|' .. frompz )
-                        teamHavens:remove(fromHaven)
-                    end
-                    EZDrawer.DrawerTemplates.EZDrawTimedVec(frompx,frompy,frompz,tarpx,tarpy,tarpz,{0,1,0,0.5},16,0.2,Game.gameSpeed*5)
-                    
+                if not PosHaveHaven(tarpx,tarpz) then
+                    local tarpy=spGetGroundHeight(tarpx,tarpz)
+                    spSendLuaRulesMsg('sethaven|' .. tarpx .. '|' .. tarpy .. '|' .. tarpz )
                 end
-                spSendLuaRulesMsg('sethaven|' .. tarpx .. '|' .. tarpy .. '|' .. tarpz )
-                movedHavens:remove(movedHavenId)
+                hidedHavens:remove(movedHavenId)
                 movedHavenId=movedHavenId-1
             end
         end
@@ -233,5 +215,5 @@ function widget:GameFrame(n)
 end
 
 function widget:PlayerChanged (playerID)
-    WackyBag.utils.DisableForSpec()
+    WackyBag.utils.DisableForSpec(widgetHandler)
 end

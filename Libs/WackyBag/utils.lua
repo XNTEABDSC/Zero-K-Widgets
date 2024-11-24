@@ -2,6 +2,8 @@ if WG.WackyBag.utils==nil then
     local utils={}
     WG.WackyBag.utils=utils
     function utils.DisableForSpec(widgetHandler)
+        --local testGet=getfenv(1).widgetHandler
+        --Spring.Echo("DisableForSpec Autoget: " .. tostring(testGet) .. "Eq: ".. tostring(testGet==widgetHandler))
         if Spring.GetSpectatingState() then
             widgetHandler:RemoveWidget()
             return true
@@ -60,12 +62,17 @@ if WG.WackyBag.utils==nil then
         if DoLocatePosition then
             insertOption={"alt"}
         end
-        Spring.GiveOrderToUnit(
+        spGiveOrderToUnit(
             unitId,
             CMD_INSERT,
             insertparams,
             insertOption
         );
+    end
+    
+    local CMD_REMOVE=CMD.REMOVE
+    function utils.RemoveOrderOfUnit(unitId,cmdtag)
+        spGiveOrderToUnit(unitId,CMD_REMOVE,{cmdtag},0)
     end
 
     local GetOrDefMetatable={
@@ -76,4 +83,87 @@ if WG.WackyBag.utils==nil then
     function utils.SetGetOrDef(t)
         setmetatable(t,GetOrDefMetatable)
     end
+
+    function utils.PosInWld(x,z)
+        return x>=0 and x<Game.mapSizeX and z>=0 and z<Game.mapSizeZ
+    end
+    function utils.curryget(t)
+        return function (k)
+            return t[k]
+        end
+    end
+
+    --local spIsUnitAllied=Spring.IsUnitAllied
+    local spValidUnitID=Spring.ValidUnitID 
+    local spGetUnitDefID=Spring.GetUnitDefID
+    local spGetUnitTeam =Spring.GetUnitTeam
+    local spGetUnitAllyTeam=Spring.GetUnitAllyTeam
+
+    local spGetMyTeamID=Spring.GetMyTeamID
+    local spGetMyAllyTeamID=Spring.GetMyAllyTeamID
+    --local spGetUnitDefID=Spring.GetUnitDefID
+
+    ---Common check unit's validity, ud, team, allyteam
+    ---
+    ---team : nil(don't check)|true(eq mine)|false(n eq mine)|TeamId
+    ---
+    ---@param unitId UnitId
+    ---@param udid UnitDefId|nil
+    ---@param team TeamId|boolean|nil
+    ---@param allyteam AllyteamId|boolean|nil
+    ---@return boolean
+    function utils.CheckUnit(unitId,udid,team,allyteam)
+
+        if not spValidUnitID(unitId) then
+            return false
+        end
+
+        if (udid~=nil) and not (spGetUnitDefID(unitId)==udid) then
+            return false
+        end
+
+        if allyteam~=nil then
+            if allyteam==false then
+                allyteam = spGetMyAllyTeamID()
+                if allyteam==spGetUnitAllyTeam(unitId) then
+                    return false
+                end
+            else
+                if allyteam==true then
+                    allyteam = spGetMyAllyTeamID()
+                end
+                if allyteam~=spGetUnitAllyTeam(unitId) then
+                    return false
+                end
+            end
+        end
+
+        if team~=nil then
+            if team==false then
+                team = spGetMyTeamID()
+                if team == spGetUnitTeam(unitId) then
+                    return false
+                end
+            else
+                if team==true then
+                    team = spGetMyTeamID()
+                end
+                if team~=spGetUnitTeam(unitId) then
+                    return false
+                end
+            end
+            
+        end
+
+        
+        return true
+    end
+    do
+        local inv_piover2=1/(math.pi/2)
+        local atan=math.atan
+        function utils.inf_to_n1_1_atan(x)
+            return atan(x)*inv_piover2
+        end
+    end
+    -- math.tanh
 end

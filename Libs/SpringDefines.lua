@@ -3,21 +3,21 @@
 
 Spring={}
 ---@class UnitId : integer
----@class unitDefId:integer
+---@class UnitDefId:integer
 
----@class playerId:integer
----@class teamId:integer
----@class allyteamId:integer
+---@class PlayerId:integer
+---@class TeamId:integer
+---@class AllyteamId:integer
 
 ---@class timeSec:number
 
----@class frame:integer
----@operator div(framePerSec):timeSec
----@class framePerSec:integer
----@operator mul(timeSec):frame
+---@class Frame:integer
+---@class FramePerSec:integer
+---@operator div(FramePerSec):timeSec
+---@operator mul(timeSec):Frame
 
 ---@class WldDist:number
----@operator div(frame):WldSpeed
+---@operator div(Frame):WldSpeed
 ---@operator add(WldDist):WldDist
 ---@operator add(WldSpeed):WldDist
 ---@alias WldxPos WldDist
@@ -39,7 +39,7 @@ Spring={}
 ]=]
 
 ---@class WldSpeed:number
----@operator mul(frame):WldDist
+---@operator mul(Frame):WldDist
 ---@operator unm:WldSpeed
 
 ---@alias WldxVel WldSpeed
@@ -69,7 +69,7 @@ function Spring.Echo(...)end
 
 
 ---@param UnitId UnitId
----@return unitDefId
+---@return UnitDefId
 ---@nodiscard
 function Spring.GetUnitDefID(UnitId)end
 
@@ -117,11 +117,21 @@ function Spring.GetUnitVelocity(UnitId)end
 ---@return WldyPos
 function Spring.GetGroundHeight(x,z)end
 
----@return allyteamId
+---@return AllyteamId
 function Spring.GetMyAllyTeamID()end
 
----@return teamId
+---@return TeamId
 function Spring.GetMyTeamID()end
+
+---comment
+---@param unitId UnitId
+---@return TeamId
+function Spring.GetUnitTeam(unitId)end
+
+---comment
+---@param unitId UnitId
+---@return AllyteamId
+function Spring.GetUnitAllyTeam(unitId)end
 
 --- return true when spec
 ---@return boolean
@@ -131,7 +141,7 @@ function Spring.GetSpectatingState()end
 ---@param x WldxPos
 ---@param y WldyPos
 ---@param z WldzPos
----@param allyteamId allyteamId
+---@param allyteamId AllyteamId
 ---@return boolean
 function Spring.IsPosInRadar(x,y,z,allyteamId)end
 
@@ -139,7 +149,7 @@ function Spring.IsPosInRadar(x,y,z,allyteamId)end
 ---@param x WldxPos
 ---@param y WldyPos
 ---@param z WldzPos
----@param allyteamId allyteamId
+---@param allyteamId AllyteamId
 ---@return boolean
 function Spring.IsPosInLos(x,y,z,allyteamId)end
 
@@ -161,14 +171,14 @@ function Spring.MarkerErasePosition(x,y,z)end
 ---@param x WldxPos
 ---@param z WldzPos
 ---@param radius WldDist
----@param teamId teamId
+---@param teamId TeamId
 ---@return list<UnitId>
 function Spring.GetUnitsInCylinder(x,z,radius,teamId)end
 
 
 Game={}
---- framePerSec
----@type framePerSec
+--- FramePerSec
+---@type FramePerSec
 Game.gameSpeed=30
 ---@type WldxPos
 Game.mapSizeX=512
@@ -211,5 +221,8 @@ function Spring.GetProjectileVelocity(projectileID)end
 ---@param projId ProjectileId
 ---@return WeaponDefId
 function Spring.GetProjectileDefID(projId)end
+
+---@return Frame
+function Spring.GetGameFrame()end
 
 CMD={}

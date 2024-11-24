@@ -27,7 +27,7 @@ local spIsPosInRadar		= Spring.IsPosInRadar
 local spIsPosInLos = Spring.IsPosInLos
 local SafeZone=WG.SafeZone
 
----@type framePerSec
+---@type FramePerSec
 local FramePerSecond=30
 local MapSizeUnit=SafeZone.GridSize
 local MapWidth, MapHeight = Game.mapSizeX, Game.mapSizeZ

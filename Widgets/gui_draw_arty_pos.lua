@@ -57,7 +57,14 @@ local WatchWpnDrawPrevState={
 
 }
 local WatchWpnDrawTime={
-	default=Game.gameSpeed*8
+	default=Game.gameSpeed*8,
+	nuclear_missile=Game.gameSpeed*20,
+	raveparty_blue_shocker=Game.gameSpeed*20,
+	raveparty_green_stamper=Game.gameSpeed*20,
+	raveparty_orange_roaster=Game.gameSpeed*20,
+	raveparty_red_killer=Game.gameSpeed*20,
+	raveparty_violet_slugger=Game.gameSpeed*20,
+	raveparty_yellow_slammer=Game.gameSpeed*20,
 }
 
 
@@ -81,7 +88,8 @@ do
 	WatchWpnDrawColor["raveparty_green_stamper"]=WatchWpnDrawColor["seismic_seismic_weapon"]
 end
 
-local wgGetProjectiles=WG.WackyBag.utils.get_proj.GetProjList
+local wbGetProjectiles=WG.WackyBag.utils.get_proj.GetProjList
+local wbPosInWld=WG.WackyBag.utils.PosInWld
 
 local spGetProjectilePosition=Spring.GetProjectilePosition
 local spGetProjectileVelocity=Spring.GetProjectileVelocity
@@ -166,7 +174,7 @@ local function UpdateProjs()
 		WDInfo.Projs={}
 	end
 	WatchProjs={}
-	for key, value in pairs(wgGetProjectiles()) do
+	for key, value in pairs(wbGetProjectiles()) do
 		local WDInnerId=WDIdToWatchWpn[spGetProjectileDefID(value)]
 		if WDInnerId~=nil then
 			local l=WatchWpnAndProjs[WDInnerId].Projs
@@ -348,6 +356,7 @@ local function EnumProjPath(proID,wpndef , drawtime)
 		if 0>=timeCount then
 			return nil
 		end
+		
 		local GroundHeight=spGetGroundHeight(posx,posz)
 		if GroundHeight<0 then
 			GroundHeight=0
@@ -459,7 +468,7 @@ function widget:DrawWorld()
 					local x,y,z,tl
 					while true do
 						local x_,y_,z_,tl_=enumf()
-						if(x_==nil) then
+						if(x_==nil) or not wbPosInWld(x_,z_) then
 							break;
 						end
 						x,y,z,tl=x_,y_,z_,tl_
@@ -484,7 +493,7 @@ function widget:DrawWorld()
 					local x,y,z,tl
 					while true do
 						local x_,y_,z_,tl_=enumf()
-						if(x_==nil) then
+						if(x_==nil) or not wbPosInWld(x_,z_) then
 							break;
 						end
 						x,y,z,tl=x_,y_,z_,tl_
@@ -503,7 +512,7 @@ function widget:DrawWorld()
 				function DrawPrevPathLine()
 					local enumf=EnumProjPrevPath(projid,WDId,drawtime)
 					local x,y,z,tl=enumf()
-					while x~=nil do
+					while x~=nil and wbPosInWld(x,z) do
 						glColor(color[1],color[2],color[3],color[4]* tl )
 						glVertex(x,y,z)
 						x,y,z,tl=enumf()

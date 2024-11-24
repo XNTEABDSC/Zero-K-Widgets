@@ -13,7 +13,7 @@ if WG.SafeZone==nil then
     local spEcho=Spring.Echo
     local spGetMyTeamID=Spring.GetMyTeamID
     local spValidUnitID = Spring.ValidUnitID
-    ---@type framePerSec
+    ---@type FramePerSec
     local FramePerSecond=30
     local spGetGroundHeight = Spring.GetGroundHeight
     local spIsPosInRadar		= Spring.IsPosInRadar
@@ -39,16 +39,16 @@ if WG.SafeZone==nil then
 ---@diagnostic disable-next-line: assign-type-mismatch
     SafeZone.GridHeight=MapHeight/SafeZone.GridSize
     --- current frame, (historical reasons: I d k Spring.GetGameFrame)
-    ---@type frame
+    ---@type Frame
     SafeZone.GameTime=0
     --- how fast do 'danger' spread. in frame
-    ---@type frame
+    ---@type Frame
     SafeZone.DangerSpreadTime=5*FramePerSecond
-    ---@type frame
+    ---@type Frame
     --- set when a grid is danger. in frame
     SafeZone.DangerInitTime=10*FramePerSecond
     --- when the grid is safe. in frame
-    ---@type frame
+    ---@type Frame
     SafeZone.SafeTime=-10*FramePerSecond
     
     --- from world pos to its grid pos
@@ -109,7 +109,7 @@ if WG.SafeZone==nil then
     end
 
     ---@class SafeZoneGridObj
-    ---@field DangerTime frame
+    ---@field DangerTime Frame
 
     --- stores state of grid<br>
     --- SafeZoneGrid[gx][gz]={DangerTime}
@@ -211,21 +211,21 @@ if WG.SafeZone==nil then
 
     ---@param gx gridX
     ---@param gz gridZ
-    ---@return frame
+    ---@return Frame
     function SafeZone.GetZoneDangerTime(gx,gz)
         return SafeZone.SafeZoneGrid[gx][gz].DangerTime-SafeZone.GameTime
     end
 
     ---@param gx gridX
     ---@param gz gridZ
-    ---@param time frame
+    ---@param time Frame
     function SafeZone.SetZoneDangerTime(gx,gz,time)
         SafeZone.SafeZoneGrid[gx][gz].DangerTime=time+SafeZone.GameTime
     end
 
     ---@param gx gridX
     ---@param gz gridZ
-    ---@param time frame
+    ---@param time Frame
     function SafeZone.SetZoneDangerTimeUpTo(gx,gz,time)
         local realTime=time+SafeZone.GameTime
         if(SafeZone.SafeZoneGrid[gx][gz].DangerTime<realTime) then
@@ -242,7 +242,7 @@ if WG.SafeZone==nil then
     end
 
     --- update frequency of watch danger units, in frame
-    ---@type frame
+    ---@type Frame
     SafeZone.WatchDangerUnitsTimeDelta=6
 
     --- danger units, register when in radar, update per SafeZone.WatchDangerUnitsTimeDelta, set their grid pos to danger
@@ -259,7 +259,7 @@ if WG.SafeZone==nil then
     --- find closest SafeZone where DangerTime-GameTime < safetime
     ---@param gx gridX
     ---@param gz gridZ
-    ---@param safetime frame
+    ---@param safetime Frame
     ---@return gridX|nil,gridZ|nil
     function SafeZone.FindClosestSafeZone(gx,gz,safetime)
         safetime=(safetime or SafeZone.SafeTime)
@@ -307,3 +307,18 @@ if WG.SafeZone==nil then
 
 end
 return WG.SafeZone
+
+--[==[
+    todo
+    enemy adjust downwards, not instantly
+
+    default: n=n*0.9
+
+    enemy:   n=(cost-n)*0.1+n
+
+    m=log n
+
+    default: m=m+log 0.9
+
+    enemy: m=log (0.1*cost +0.9 * e^m) ~ = m*0.9+ 0.1*cosst
+]==]

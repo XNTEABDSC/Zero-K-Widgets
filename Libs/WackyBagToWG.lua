@@ -14,6 +14,7 @@ if (WG.WackyBag==nil) then
     WackyBag.calculates={}
     --WackyBag.calculates.grid_enum = VFS.Include(WackyBag.path .. "calculates/grid_enum.lua")
     VFS.Include(WackyBag.path .. "calculates/grid_enum.lua")
+    VFS.Include(WackyBag.path .. "calculates/convolution.lua")
     
 end
 return WG.WackyBag
