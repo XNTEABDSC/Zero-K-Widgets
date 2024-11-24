@@ -77,12 +77,13 @@ local LikhoRange=WeaponDefs[LikhoUD.weapons[1].weaponDef].range
 local LikhoSpeed=LikhoUD.speed / Game.gameSpeed
 
 local function CheckLikhoAvaliable(unitId,prev)
-	if WBUCheckUnit(unitId,LikhoUDId,nil,false) and spGetUnitPosition(unitId) then
+	local x,y,z=spGetUnitPosition(unitId)
+	local vx,vy,vz=spGetUnitVelocity(unitId)
+	if WBUCheckUnit(unitId,LikhoUDId,nil,false) and x and vx then
 		if not prev then
-			local x,y,z=Spring.GetUnitPosition(unitId)
 			Spring.MarkerAddPoint(x,y,z,"Likho Register")
-			return {id=unitId}
 		end
+		return {id=unitId,x=x,y=y,z=z,vx=vx,vy=vy,vz=vz}
 	else
 		return nil
 	end
@@ -167,33 +168,38 @@ function widget:GameFrame(time)
 				local lobvx,lobvy,lobvz=spGetUnitVelocity(lobInfo.id)
 
 				for likhoId,likhoInfo in WatchLikhosUB.Enum() do
-					---@cast likhoInfo {id:UnitId}
-					local likhox,likhoy,likhoz=spGetUnitPosition(likhoInfo.id)
+					-- ---@cast likhoInfo {id:UnitId,x:WldxPos,y:WldyPos,z:WldzPos}
+					local likhox,likhoy,likhoz=likhoInfo.x,likhoInfo.y,likhoInfo.z--spGetUnitPosition(likhoInfo.id)
+					
+					if likhox then
+							EZDrawer.Add(EZDrawer.DrawerTemplates.DrawOnce(
+							function ()
+								EZDrawer.DrawerTemplates.DrawLine(lobx,loby,lobz,likhox,likhoy,likhoz,{1,0,0,1},4)
+							end
+						))
 
-					EZDrawer.Add(EZDrawer.DrawerTemplates.DrawOnce(
-						function ()
-							EZDrawer.DrawerTemplates.DrawLine(lobx,loby,lobz,likhox,likhoy,likhoz,{1,0,0,1},4)
+						local likhovx,likhovy,likhovz=likhoInfo.vx,likhoInfo.vy,likhoInfo.vz--spGetUnitVelocity(likhoInfo.id)
+						local offset_likho_to_lob_x,offset_likho_to_lob_z=lobx-likhox,lobz-likhoz
+						local distance=sqrt(offset_likho_to_lob_x*offset_likho_to_lob_x+offset_likho_to_lob_z*offset_likho_to_lob_z)
+						local offsetNormX,offsetNormZ=offset_likho_to_lob_x/distance,offset_likho_to_lob_z/distance
+
+						local LikhoSpeedOnOffset=offsetNormX*likhovx+offsetNormZ*likhovz
+						local LobSpeedOnOffset=offsetNormX*lobvx+offsetNormZ*lobvz
+
+
+						if distance+(-LikhoSpeedOnOffset+LobSpeedOnOffset)*(delayFrame-extraDelay) < LikhoRange--[==[+lobbingRange/2]==] then
+							--spGiveOrderToUnit(unitId.id,CMD_DGUN,{jumpX+unitx,jumpY,jumpZ+unitz},0)
+
+							local jumpX,jumpZ=offsetNormX*JumpDistance,offsetNormZ*JumpDistance
+							local jumpY=spGetGroundHeight(jumpX,jumpZ)
+
+							wbInsertOrderToUnit(lobInfo.id,true,0,CMD_DGUN,{jumpX+lobx,jumpY,jumpZ+lobz},0)
+							lobInfo.lastCalled=time
 						end
-					))
-
-					local likhovx,likhovy,likhovz=spGetUnitVelocity(likhoInfo.id)
-					local offset_likho_to_lob_x,offset_likho_to_lob_z=lobx-likhox,lobz-likhoz
-					local distance=sqrt(offset_likho_to_lob_x*offset_likho_to_lob_x+offset_likho_to_lob_z*offset_likho_to_lob_z)
-					local offsetNormX,offsetNormZ=offset_likho_to_lob_x/distance,offset_likho_to_lob_z/distance
-
-					local LikhoSpeedOnOffset=offsetNormX*likhovx+offsetNormZ*likhovz
-					local LobSpeedOnOffset=offsetNormX*lobvx+offsetNormZ*lobvz
-
-
-					if distance+(-LikhoSpeedOnOffset+LobSpeedOnOffset)*(delayFrame-extraDelay) < LikhoRange--[==[+lobbingRange/2]==] then
-						--spGiveOrderToUnit(unitId.id,CMD_DGUN,{jumpX+unitx,jumpY,jumpZ+unitz},0)
-
-						local jumpX,jumpZ=offsetNormX*JumpDistance,offsetNormZ*JumpDistance
-						local jumpY=spGetGroundHeight(jumpX,jumpZ)
-
-						wbInsertOrderToUnit(lobInfo.id,true,0,CMD_DGUN,{jumpX+lobx,jumpY,jumpZ+lobz},0)
-						lobInfo.lastCalled=time
+					else
+						Spring.Echo("odd")
 					end
+					
 				end
 			end
 
