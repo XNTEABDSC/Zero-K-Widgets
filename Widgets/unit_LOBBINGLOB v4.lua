@@ -80,13 +80,9 @@ local function CheckLikhoAvaliable(unitId,prev)
 	local x,y,z=spGetUnitPosition(unitId)
 	local vx,vy,vz=spGetUnitVelocity(unitId)
 	if WBUCheckUnit(unitId,LikhoUDId,nil,false) and x and vx then
-	local x,y,z=spGetUnitPosition(unitId)
-	local vx,vy,vz=spGetUnitVelocity(unitId)
-	if WBUCheckUnit(unitId,LikhoUDId,nil,false) and x and vx then
 		if not prev then
 			Spring.MarkerAddPoint(x,y,z,"Likho Register")
 		end
-		return {id=unitId,x=x,y=y,z=z,vx=vx,vy=vy,vz=vz}
 		return {id=unitId,x=x,y=y,z=z,vx=vx,vy=vy,vz=vz}
 	else
 		return nil
