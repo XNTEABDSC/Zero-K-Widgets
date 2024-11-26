@@ -105,7 +105,7 @@ if WG.WackyBag.utils==nil then
 
     ---Common check unit's validity, ud, team, allyteam
     ---
-    ---team : nil(don't check)|true(eq mine)|false(n eq mine)|TeamId
+    ---team/allyteam : nil(don't check)|true(= mine)|false(~= mine)|TeamId
     ---
     ---@param unitId UnitId
     ---@param udid UnitDefId|nil

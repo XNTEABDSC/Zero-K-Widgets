@@ -75,11 +75,11 @@ local LikhoUDId=LikhoUD.id
 local LikhoWDId=LikhoUD.weapons[1].weaponDef
 local LikhoRange=WeaponDefs[LikhoUD.weapons[1].weaponDef].range
 local LikhoSpeed=LikhoUD.speed / Game.gameSpeed
-
+local spGetUnitIsDead=Spring.GetUnitIsDead
 local function CheckLikhoAvaliable(unitId,prev)
 	local x,y,z=spGetUnitPosition(unitId)
 	local vx,vy,vz=spGetUnitVelocity(unitId)
-	if WBUCheckUnit(unitId,LikhoUDId,nil,false) and x and vx then
+	if WBUCheckUnit(unitId,LikhoUDId,nil,false) and x and vx and (spGetUnitIsDead(unitId)==false)then
 		if not prev then
 			Spring.MarkerAddPoint(x,y,z,"Likho Register")
 		end
@@ -109,6 +109,8 @@ function widget:Initialize()
 	myTeamId=Spring.GetMyTeamID()
 	myPlayerId=Spring.GetMyPlayerID()
 	myAllyTeamId=Spring.GetMyAllyTeamID()
+	WatchLobsUB.UpdateFromAllUnits()
+	WatchLikhosUB.UpdateFromAllUnits()
 end
 --WatchLobsUB
 local JumpDistance=550

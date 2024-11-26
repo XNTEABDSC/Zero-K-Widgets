@@ -92,6 +92,13 @@ if(WG.UnitBag==nil) then
             fn(o,Id)
         end
 
+        local function UpdateFromAllUnits()
+            for key, UnitId in pairs(Spring.GetAllUnits()) do
+                UpdateUnit(UnitId)
+            end
+        end
+        o.UpdateFromAllUnits=UpdateFromAllUnits
+
         return o
     end
 end

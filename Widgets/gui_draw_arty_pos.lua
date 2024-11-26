@@ -128,7 +128,7 @@ local function GetWatchWeaponDefs()
 		--Spring.Utilities.TableEcho(wd.damages,wd.name .. ".damage")
 		if  wd.damages[1]>1 and
 			(wd.range and wd.range>740) and
-			not (wd.beamTime and wd.beamTime>1) and
+			not (wd.beamTime and wd.beamTime>0.001) and
 			not ((wd.customParams or wd.customparams or {}).isaa) and
 			not (wd.wobble and wd.wobble>0) and
 			not wd.tracks and
