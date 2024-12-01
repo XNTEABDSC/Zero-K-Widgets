@@ -1,8 +1,8 @@
 
 function widget:GetInfo()
 	return {
-		name      = "LOBBINGLOB v4",
-		desc      = "lobster automatically dodge likho shot",
+		name      = "Auto Lobbing v4",
+		desc      = "Lobster automatically dodge likho shot",
 		author    = "XNT",
 		date      = "date",
 		license   = "",
@@ -99,7 +99,7 @@ local WatchLikhosUB=UnitBag.new({
 --local UnitIdToWatchId={}
 --Spring.Echo("LikhoValues: range: ".. LikhoRange .. ", speed: " .. LikhoSpeed)
 
-local lobbingRange=UnitDefNames["amphlaunch"].customParams.thrower_gather
+local lobbing_gather_Range=UnitDefNames["amphlaunch"].customParams.thrower_gather
 
 function widget:Initialize()
 	if WackyBag.utils.DisableForSpec(widgetHandler) then
@@ -155,7 +155,7 @@ function widget:GameFrame(time)
 			local cloakedCheck=spGetUnitIsCloaked(lobInfo.id)
 
 			if cloakedCheck then
-				for _,CircleUnitId in pairs(spGetUnitsInCylinder(lobx,lobz,lobbingRange,myTeamId)) do
+				for _,CircleUnitId in pairs(spGetUnitsInCylinder(lobx,lobz,lobbing_gather_Range,myTeamId)) do
 					--Spring.Echo(type(CircleUnitId) .. " : " .. tostring(CircleUnitId))
 					if not spGetUnitIsCloaked(CircleUnitId) then
 						cloakedCheck=false
