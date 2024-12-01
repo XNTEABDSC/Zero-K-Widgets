@@ -847,8 +847,7 @@ function widget:MouseRelease(mx, my, mButton)
 		else
 			spSetActiveCommand(nil) -- Reset immediately
 		end
-	elseif not alt and not meta and not ctrl and usingRMB then
-		ctrl=true
+	
 	end
 	-- Are we going to use the drawn formation?
 	local usingFormation = true
@@ -961,7 +960,10 @@ function widget:MouseRelease(mx, my, mButton)
 				end
 			end
 		end
-
+		
+		if not alt and not meta and not ctrl and usingRMB and usingContextCommand then
+			ctrl=true
+		end
 		SendSetWantedMaxSpeed(alt, ctrl, meta, shift)
 	end
 

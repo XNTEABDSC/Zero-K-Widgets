@@ -63,6 +63,7 @@ local function GetModKeys()
 
 	return alt, ctrl, meta, shift
 end
+local spGetSelectedUnits = Spring.GetSelectedUnits
 
 local function ChooseAMove(unitID)
 	if not options.default_amove.value then
@@ -77,6 +78,9 @@ local function ChooseAMove(unitID)
 	local _,_,leftPressed,middlePressed,rightPressed=spGetMouseState()
 	if leftPressed or middlePressed or not rightPressed then
 		--Spring.Echo("mouse")
+		return
+	end
+	if #spGetSelectedUnits()<10 then
 		return
 	end
 	return CMD.FIGHT
