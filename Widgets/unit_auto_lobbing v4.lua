@@ -54,7 +54,7 @@ local function CheckLobAvaliable(unitId,prev)
 	if not prev then
 		if WBUCheckUnit(unitId,lobsterUDId,true,true) then
 			local x,y,z=Spring.GetUnitPosition(unitId)
-			Spring.MarkerAddPoint(x,y,z,"Lob Register")
+			--Spring.MarkerAddPoint(x,y,z,"Lob Register")
 			return {id=unitId,lastCalled=-1000}
 		end
 	else
@@ -81,7 +81,7 @@ local function CheckLikhoAvaliable(unitId,prev)
 	local vx,vy,vz=spGetUnitVelocity(unitId)
 	if WBUCheckUnit(unitId,LikhoUDId,nil,false) and x and vx and (spGetUnitIsDead(unitId)==false)then
 		if not prev then
-			Spring.MarkerAddPoint(x,y,z,"Likho Register")
+			--Spring.MarkerAddPoint(x,y,z,"Likho Register")
 		end
 		return {id=unitId,x=x,y=y,z=z,vx=vx,vy=vy,vz=vz}
 	else
@@ -148,8 +148,11 @@ function widget:GameFrame(time)
 		if lobx then
 			local _, loaded=spGetUnitWeaponState(lobInfo.id,1)
 			local cmdQueue=spGetUnitCommands(lobInfo.id,1)
+			local dgunCMD=(cmdQueue and cmdQueue[1] and cmdQueue[1].id == CMD_DGUN and cmdQueue[1]) or nil
 
 			local atGround=(loby-spGetGroundHeight(lobx,lobz))<1
+
+			local underWater=loby<0
 
 
 			local cloakedCheck=spGetUnitIsCloaked(lobInfo.id)
@@ -164,8 +167,7 @@ function widget:GameFrame(time)
 				end
 			end
 
-			local dgunCMD=(cmdQueue and cmdQueue[1] and cmdQueue[1].id == CMD_DGUN and cmdQueue[1]) or nil
-			if (time-lobInfo.lastCalled)>Game.gameSpeed and not cloakedCheck and loaded and atGround and dgunCMD==nil then
+			if (time-lobInfo.lastCalled)>Game.gameSpeed and not cloakedCheck and loaded and atGround and not underWater and dgunCMD==nil then
 
 				local lobvx,lobvy,lobvz=spGetUnitVelocity(lobInfo.id)
 

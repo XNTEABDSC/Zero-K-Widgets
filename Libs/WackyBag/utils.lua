@@ -1,15 +1,7 @@
 if WG.WackyBag.utils==nil then
     local utils={}
     WG.WackyBag.utils=utils
-    function utils.DisableForSpec(widgetHandler)
-        --local testGet=getfenv(1).widgetHandler
-        --Spring.Echo("DisableForSpec Autoget: " .. tostring(testGet) .. "Eq: ".. tostring(testGet==widgetHandler))
-        if Spring.GetSpectatingState() then
-            widgetHandler:RemoveWidget()
-            return true
-        end
-        return false
-    end
+    
     utils.MapSizeUnit=512
     --utils.FramePerSecond=Game.gameSpeed
     --utils.GetFrame=Spring.GetGameFrame
@@ -165,5 +157,24 @@ if WG.WackyBag.utils==nil then
             return atan(x)*inv_piover2
         end
     end
+    VFS.Include(WG.WackyBag.path .. "utils/for_widget.lua")
+
+    function utils.DisableForSpec(widgetHandler)
+        --local testGet=getfenv(1).widgetHandler
+            --Spring.Echo("DisableForSpec Autoget: " .. tostring(testGet) .. "Eq: ".. tostring(testGet==widgetHandler))
+            if Spring.GetSpectatingState() then
+                widgetHandler:RemoveWidget()
+                return true
+            end
+            return false
+    end
     -- math.tanh
+    function utils.ListToTable(list,tablevalue)
+        tablevalue=tablevalue or true
+        local res={}
+        for key, value in pairs(list) do
+            res[value]=tablevalue
+        end
+        return res
+    end
 end

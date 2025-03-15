@@ -961,9 +961,11 @@ function widget:MouseRelease(mx, my, mButton)
 			end
 		end
 		
-		if not alt and not meta and not ctrl and usingRMB and usingContextCommand then
-			ctrl=true
-		end
+		--[=[
+		if not alt and not meta and usingRMB and usingContextCommand then
+			ctrl=not ctrl
+		end]=]
+
 		SendSetWantedMaxSpeed(alt, ctrl, meta, shift)
 	end
 

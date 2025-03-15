@@ -84,7 +84,7 @@ local function CheckAndRegisterLob(unitID, unitDefID, unitTeam)
 		--WatchLobsUSID:add(unitID)
 		
 		local x,y,z=Spring.GetUnitPosition(unitID)
-		Spring.MarkerAddPoint(x,y,z,"Lob Register")
+		--Spring.MarkerAddPoint(x,y,z,"Lob Register")
 		
 	end
 end
@@ -105,7 +105,7 @@ local function CheckAndRegisterLikho(unitID,unitDefID,unitTeam)
 		WatchLikhos[unitID]={id=unitID}
 
 		local x,y,z=Spring.GetUnitPosition(unitID)
-		Spring.MarkerAddPoint(x,y,z,"Likho Register")
+		--Spring.MarkerAddPoint(x,y,z,"Likho Register")
 	end
 end
 
@@ -251,8 +251,8 @@ function widget:GameFrame(time)
 
 					if distance+(-LikhoSpeedOnOffset+LobSpeedOnOffset)*(delayFrame-extraDelay) < LikhoRange--[==[+lobbingRange/2]==] then
 						--spGiveOrderToUnit(unitId.id,CMD_DGUN,{jumpX+unitx,jumpY,jumpZ+unitz},0)
-						
-						local jumpX,jumpZ=offsetNormX*JumpDistance,offsetNormZ*JumpDistance
+						local RealJumpDistance=JumpDistance
+						local jumpX,jumpZ=offsetNormX*RealJumpDistance,offsetNormZ*RealJumpDistance
 						local jumpY=spGetGroundHeight(jumpX,jumpZ)
 
 						wbInsertOrderToUnit(lobInfo.id,true,0,CMD_DGUN,{jumpX+lobx,jumpY,jumpZ+lobz},0)
