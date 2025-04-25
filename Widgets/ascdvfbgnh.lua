@@ -24,13 +24,20 @@ local NoWDType=WackyBag.utils.ListToTable{
 }
 
 local ChoosedUnits={
-    "amphassault","amphimpulse","cloakarty","cloakraid","cloakriot","cloakskirm","gunshipaa","gunshipassault",
-    "gunshipkrow","gunshipraid","hoveraa","hoverarty","hoverriot","hoverskirm","shieldaa",
-    "shipaa","shiparty","shipassault","shipriot","shipskirm","spideraa","spiderassault","spiderriot","spiderscout",
+
+    --"cloakskirm",
+    "amphassault","amphimpulse",
+    "cloakarty","cloakraid","cloakriot",
+    "gunshipaa","gunshipassault",
+    "gunshipkrow","gunshipraid",
+    "hoveraa","hoverarty","hoverriot","hoverskirm",
+    "shieldaa",
+    "shipaa","shiparty","shipassault","shipriot","shipskirm",
+    "spideraa","spiderassault","spiderriot","spiderscout",
     "spiderskirm","staticarty","striderarty","tankaa","tankarty","tankassault","tankriot","turretaaclose",
     "turretaafar","turretaaflak","turretaalaser","turretantiheavy","turretheavy","turretheavylaser",
     "turretlaser","turretmissile","vehaa","vehassault","vehraid","vehriot",
-    --,"turretgauss","hoverraid"
+    "turretgauss","hoverraid"
 }
 
 local function GetEverything()
@@ -67,9 +74,6 @@ local function GetSelectedThings()
         if ud.damageModifier then
             return
         end
-        if ud.speed==0 then
-            return
-        end
         if ud.canKamikaze then
             return
         end
@@ -77,14 +81,53 @@ local function GetSelectedThings()
             hp=ud.health,
             speed=ud.speed,
             mass=ud.mass,
-            size=ud.moveDef.xsize,
-            cost =ud.metalCost,
-            name=ud.name
+            size=ud.xsize,
+            cost=ud.metalCost,
+            name=ud.name,
+            losRadius =ud.losRadius ,
+            radarRadius =ud.radarRadius ,
         }
+        ---@type string
+        local moveDefName=ud.moveDef and ud.moveDef.name
+        if moveDefName then
+            moveDefName=moveDefName:lower()
+            unitData.moveDefName=moveDefName
+            if moveDefName:find("bot") then
+                local l,r=moveDefName:find("bot")
+                local prefix=moveDefName:sub(1,l-1)
+    
+                ---maxwaterdepth>1000
+                unitData.move_ground=true
+                unitData.move_slope=true
+                if prefix:find("a") then -- amph
+                    unitData.move_water=true
+                end
+                if prefix:find("t") then
+                    unitData.move_hill=true
+                end
+            elseif moveDefName:find("tank") then
+                unitData.move_ground=true
+                
+            elseif moveDefName:find("hover") then
+                unitData.move_ground=true
+                unitData.move_water=true
+                local l,r=moveDefName:find("hover")
+                local prefix=moveDefName:sub(1,l-1)
+                if prefix:find("b") then -- amph
+                    unitData.move_slope=true
+                end
+            elseif moveDefName:find("boat") then
+                unitData.move_water=true
+            end
+            
+        else
+            unitData.move_air=true
+        end
+
         local weaponDatas={
 
         }
-        local function TrySelectWeapon(wd)
+        local function TrySelectWeapon(wd,udwd)
             if NoWDType[ wd.type] then
                 return false
             end
@@ -111,22 +154,42 @@ local function GetSelectedThings()
                 accuracy =wd.accuracy +wd.sprayAngle ,
                 projectiles =wd.projectiles * wd.salvoSize,
                 aoe=wd.damageAreaOfEffect,
-                edgeEffectiveness =wd.edgeEffectiveness ,
+                --edgeEffectiveness =wd.edgeEffectiveness ,
 
             }
-            if wd.customParams.isaa then
-                weapondata.isaa=true
-                weapondata.damage=wd.damages[Game.armorTypes["plane"]]
+            local targets=udwd.onlyTargets
+            if targets.land then
+                weapondata.target_land=true
             end
-            if wd.beamtime>0.25 then
-                weapondata.isBurstBeam=true
+            if targets.gunship then
+                weapondata.target_air=true
+            end
+            if wd.waterWeapon then
+                weapondata.target_water=true
             end
 
-            weaponDatas[#weaponDatas+1] = weapondata
+            if wd.customParams.isaa then
+                weapondata.isaa=true
+                weapondata.damage=
+                --weapondata.damage*10
+                wd.damages[Game.armorTypes["planes"]]
+            end
+
+            local wdcp=wd.customParams
+            if wdcp.script_burst then
+                weapondata.reload=tonumber(wdcp.script_reload)
+                weapondata.projectiles=weapondata.projectiles * tonumber(wdcp.script_burst)
+            end
+            --[=[
+            if wd.beamtime>0.25 then
+                weapondata.isBurstBeam=true
+            end]=]
+
+            return weapondata
         end
         for i = 1, #ud.weapons  do
             local wd=WeaponDefs[ud.weapons[i].weaponDef]
-            local res=TrySelectWeapon(wd)
+            local res=TrySelectWeapon(wd,ud.weapons[i])
             if res~=nil and res==false then
                 return
             end
@@ -135,18 +198,20 @@ local function GetSelectedThings()
 
         unitData.weaponDatas=weaponDatas
 
-        selectedUnitData[#selectedUnitData+1] = unitData
-        return
+        return unitData
     end
     for _, udname in pairs(ChoosedUnits) do
-        TrySelectUnit(UnitDefNames[udname])
+        local res=TrySelectUnit(UnitDefNames[udname])
+        if res then
+            selectedUnitData[#selectedUnitData+1] = res
+        end
     end
 
     --[=[
     for udid, ud in pairs(UnitDefs) do
         TrySelectUnit(ud)
     end]=]
-    local file = io.open("GetSelectedThings.json", 'w')
+    local file = io.open("get_states_selected.json", 'w')
     file:write(Spring.Utilities.json.encode(selectedUnitData))
     file:close()
 end
