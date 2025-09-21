@@ -114,7 +114,7 @@ function widget:Initialize()
 end
 --WatchLobsUB
 local JumpDistance=550
-local extraDelay=3
+local extraDelay=4
 
 local wbInsertOrderToUnit=WackyBag.utils.InsertOrderToUnit
 local spGetGroundHeight=Spring.GetGroundHeight

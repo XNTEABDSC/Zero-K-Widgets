@@ -171,7 +171,7 @@ function Spring.MarkerErasePosition(x,y,z)end
 ---@param x WldxPos
 ---@param z WldzPos
 ---@param radius WldDist
----@param teamId TeamId
+---@param teamId TeamId?
 ---@return list<UnitId>
 function Spring.GetUnitsInCylinder(x,z,radius,teamId)end
 

@@ -56,7 +56,9 @@ function ChooseEffectiveLobs(lobIDs)
 		
 		local lobx,loby,lobz=spGetUnitPosition(lobID)
 
-		for _,UnitId in pairs(spGetUnitsInCylinder(lobx,lobz,lobbing_gather_Range,myTeamId)) do
+
+		for _,UnitId in pairs(spGetUnitsInCylinder(lobx,lobz,lobbing_gather_Range--[=[,myTeamId]=])) do
+			
 			if UnitId~=lobID then -- lob don't throw it self
 				local BeLobedInfo=Units2BeLobedInfo[UnitId] or {alreadyLobbed=false, lobs2InRange={}}
 				BeLobedInfo.lobs2InRange[lobID]=true
