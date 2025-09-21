@@ -177,4 +177,23 @@ if WG.WackyBag.utils==nil then
         end
         return res
     end
+    function utils.MergeTable(a_assign,b)
+        for key, value in pairs(b) do
+            a_assign[key]=value
+        end
+        return a_assign
+    end
+    function utils.TableResetValues(table,set_value)
+        for key, value in pairs(table) do
+            table[key]=set_value
+        end
+        return table
+    end
+    function utils.TableKeyToList(table)
+        local res={}
+        for key, value in pairs(table) do
+            res[#res+1]=key
+        end
+        return res
+    end
 end

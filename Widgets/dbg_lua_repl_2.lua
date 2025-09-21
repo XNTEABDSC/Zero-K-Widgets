@@ -1,13 +1,13 @@
 
 function widget:GetInfo()
 	return {
-		name      = "lua repl 2",
-		desc      = "do lua",
+		name      = "run lua code",
+		desc      = "run lua code when in game",
 		author    = "XNT",
 		date      = "date",
-		license   = "MIT",
+		license   = "",
 		layer     = 0,
-		enabled   = false,
+		enabled   = true,
 	}
 end
 

@@ -16,11 +16,11 @@ local WackyBag=WG.WackyBag
 local TableEcho=Spring.Utilities.TableEcho
 
 local NoWDCP={
-    "stays_underwater","shield_drain",
+    "stays_underwater",
 }
 
 local NoWDType=WackyBag.utils.ListToTable{
-    "Shield","Star",
+    "Shield",
 }
 
 local ChoosedUnits={
@@ -36,7 +36,7 @@ local ChoosedUnits={
     "spideraa","spiderassault","spiderriot","spiderscout",
     "spiderskirm","staticarty","striderarty","tankaa","tankarty","tankassault","tankriot","turretaaclose",
     "turretaafar","turretaaflak","turretaalaser","turretantiheavy","turretheavy","turretheavylaser",
-    "turretlaser","turretmissile","vehaa","vehassault","vehraid","vehriot",
+    "turretlaser","turretmissile","vehaa","vehassault","vehriot",
     "turretgauss","hoverraid"
 }
 
@@ -121,7 +121,9 @@ local function GetSelectedThings()
             end
             
         else
-            unitData.move_air=true
+            if ud.speed>1 then
+                unitData.move_air=true
+            end
         end
 
         local weaponDatas={
@@ -132,11 +134,8 @@ local function GetSelectedThings()
                 return false
             end
 
-            if wd.damages[0]<=11 then
+            if wd.damages[0]<5 then
                 return nil
-            end
-            if wd.damages[Game.armorTypes["shield"]]~=wd.damages[0] then
-                return false
             end
 
             for key, value in pairs(NoWDCP) do
@@ -145,7 +144,9 @@ local function GetSelectedThings()
                 end
             end
             local weapondata={
-                damage=wd.damages[0],
+                damage_else=wd.damages[Game.armorTypes["else"]],
+                damage_shield=wd.damages[Game.armorTypes["shield"]],
+                damage_air=wd.damages[Game.armorTypes["planes"]],
                 type=wd.type,
                 range=wd.range,
                 reload =wd.reload,
@@ -154,6 +155,7 @@ local function GetSelectedThings()
                 accuracy =wd.accuracy +wd.sprayAngle ,
                 projectiles =wd.projectiles * wd.salvoSize,
                 aoe=wd.damageAreaOfEffect,
+                numbounce=wd.numbounce>1,
                 --edgeEffectiveness =wd.edgeEffectiveness ,
 
             }
@@ -168,12 +170,6 @@ local function GetSelectedThings()
                 weapondata.target_water=true
             end
 
-            if wd.customParams.isaa then
-                weapondata.isaa=true
-                weapondata.damage=
-                --weapondata.damage*10
-                wd.damages[Game.armorTypes["planes"]]
-            end
 
             local wdcp=wd.customParams
             if wdcp.script_burst then
